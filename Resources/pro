@@ -1,0 +1,26 @@
+# This File was auto generated on <%date%> by QTSqliteGen.  
+# Do not modify!!!!!
+# Changes will be overwritten.
+TEMPLATE = lib
+CONFIG -= app
+CONFIG *= qt debug_and_release
+CONFIG *= <%linkage%>
+DEFINES += <%linkagedef%>
+QT *= xml sql
+TARGET = <%productName%>DB
+QMAKE_INCDIR_QT = $(QTDIR)\include
+QMAKE_LIBDIR_QT = $(QTDIR)\libs
+  
+CONFIG(debug, debug|release) {
+  DESTDIR = debug
+} else {
+  DESTDIR = release
+}
+ 
+DEPENDPATH += .
+INCLUDEPATH += .
+
+# Input
+HEADERS += <%headers%>
+
+SOURCES += <%sources%>

@@ -1,0 +1,13 @@
+void <%tableName%>Record::set<%uName%>
+(
+	bool <%name%>
+)
+{
+	_recordData[f_<%uName%>]._value = <%name%>;
+	_recordData[f_<%uName%>]._changed = true;
+}
+
+bool <%tableName%>Record::<%uName%>()
+{
+	return _recordData[f_<%uName%>]._value.toBool();
+}

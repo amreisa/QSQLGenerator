@@ -1,0 +1,24 @@
+#ifndef <%PRODUCTNAME%>EXPORT_H
+#define <%PRODUCTNAME%>EXPORT_H
+
+// This File was auto generated on <%date%> by QTSqliteGen.  
+// Do not modify!!!!!
+// Changes will be overwritten.
+
+#include <QtGlobal>
+
+#ifdef BASE_DLL
+	#ifdef Q_WS_WIN
+		#ifdef <%dllExportDefine%>
+			#define <%dllExport%> Q_DECL_EXPORT
+		#else
+			#define <%dllExport%> Q_DECL_IMPORT
+		#endif
+	#else
+		#define <%dllExport%>
+	#endif
+#else
+	#define <%dllExport%>
+#endif
+
+#endif

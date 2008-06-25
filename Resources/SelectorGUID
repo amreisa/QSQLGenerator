@@ -1,0 +1,53 @@
+	// Setters for column <%name%>
+	void <%tableName%>SelectionCriteria::<%uName%>EqualsTo(const QUuid& <%lName%>)
+	{	
+		QString temp(<%lName%>.toString());
+
+		temp.remove(QChar('{')).remove(QChar('}'));
+		AppendFilterCondition("<%name%> = '" + temp + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>NotEqualsTo(const QUuid& <%lName%>)
+	{
+		QString temp(<%lName%>.toString());
+
+		temp.remove(QChar('{')).remove(QChar('}'));
+		AppendFilterCondition("<%name%> <> '" + temp + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>LessThan(const QUuid& <%lName%>)
+	{
+		QString temp(<%lName%>.toString());
+
+		temp.remove(QChar('{')).remove(QChar('}'));
+		AppendFilterCondition("<%name%> < '" + temp + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>GreaterThan(const QUuid& <%lName%>)
+	{
+		QString temp(<%lName%>.toString());
+
+		temp.remove(QChar('{')).remove(QChar('}'));
+		AppendFilterCondition("<%name%> > '" + temp + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>LessThanOrEqualTo(const QUuid& <%lName%>)
+	{
+		QString temp(<%lName%>.toString());
+
+		temp.remove(QChar('{')).remove(QChar('}'));
+		AppendFilterCondition("<%name%> <= '" + temp + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>GreaterThanOrEqualTo(const QUuid& <%lName%>)
+	{
+		QString temp(<%lName%>.toString());
+
+		temp.remove(QChar('{')).remove(QChar('}'));
+		AppendFilterCondition("<%name%> >= '" + temp + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>OrderBy(bool ascending)
+	{
+		AppendSortCriteria("<%name%>", ascending);
+	}

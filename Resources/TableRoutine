@@ -1,0 +1,7 @@
+<%tableName%>* <%productName%>Database::Get<%tableName%>()
+{
+	if (_<%variableName%> == NULL)
+		_<%variableName%> = new <%tableName%>(this);
+		
+	return _<%variableName%>;
+}

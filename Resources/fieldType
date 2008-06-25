@@ -1,0 +1,1 @@
+	SetFieldDataType(f_<%uName%>, "<%name%>", <%fieldType%>);

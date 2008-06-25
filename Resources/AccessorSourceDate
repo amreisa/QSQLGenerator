@@ -1,0 +1,13 @@
+void <%tableName%>Record::set<%uName%>
+(
+	const QDate& <%name%>
+)
+{
+	_recordData[f_<%uName%>]._value = EncodeDate(<%name%>);
+	_recordData[f_<%uName%>]._changed = true;
+}
+
+QDate <%tableName%>Record::<%uName%>()
+{
+	return DecodeDate(_recordData[f_<%uName%>]._value.toString());
+}

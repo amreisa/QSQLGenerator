@@ -1,0 +1,13 @@
+void <%tableName%>Record::set<%uName%>
+(
+	quint32 <%name%>
+)
+{
+	_recordData[f_<%uName%>]._value = <%name%>;
+	_recordData[f_<%uName%>]._changed = true;
+}
+
+quint32 <%tableName%>Record::<%uName%>()
+{
+	return _recordData[f_<%uName%>]._value.toInt();
+}

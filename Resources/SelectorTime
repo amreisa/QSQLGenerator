@@ -1,0 +1,35 @@
+	// Setters for column <%name%>
+	void <%tableName%>SelectionCriteria::<%uName%>EqualsTo(const QTime& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> = '" + <%lName%>.toString() + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>NotEqualsTo(const QTime& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> <> '" + <%lName%>.toString() + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>LessThan(const QTime& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> < '" + <%lName%>.toString() + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>GreaterThan(const QTime& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> > '" + <%lName%>.toString() + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>LessThanOrEqualTo(const QTime& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> <= '" + <%lName%>.toString() + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>GreaterThanOrEqualTo(const QTime& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> >= '" + <%lName%>.toString() + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>OrderBy(bool ascending)
+	{
+		AppendSortCriteria("<%name%>", ascending);
+	}

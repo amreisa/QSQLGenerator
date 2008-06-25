@@ -1,0 +1,15 @@
+	// Setters for column <%name%>
+	void <%tableName%>SelectionCriteria::<%uName%>EqualsTo(bool <%lName%>)
+	{
+		AppendFilterCondition("<%name%> = " + (<%lName%> == true) ? "1" : "0");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>NotEqualsTo(bool <%lName%>)
+	{
+		AppendFilterCondition("<%name%> <> " + (<%lName%> == true) ? "1" : "0");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>OrderBy(bool ascending)
+	{
+		AppendSortCriteria("<%name%>", ascending);
+	}

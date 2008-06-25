@@ -1,0 +1,13 @@
+void <%tableName%>Record::set<%uName%>
+(
+	const QUuid& <%name%>
+)
+{
+	_recordData[f_<%uName%>]._value = EncodeGuid(<%name%>);
+	_recordData[f_<%uName%>]._changed = true;
+}
+
+QUuid <%tableName%>Record::<%uName%>()
+{
+	return DecodeGuid(_recordData[f_<%uName%>]._value.toString());
+}
