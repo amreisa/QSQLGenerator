@@ -25,7 +25,7 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-// This File was auto generated on <%date%> by CalAmp's QTSqliteGen.  
+// This File was auto generated on <%date%> by QTSqliteGen.  
 // Do not modify!!!!!
 // Changes will be overwritten.
 
