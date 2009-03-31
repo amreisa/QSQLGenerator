@@ -24,7 +24,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
-// This File was auto generated on <%date%> by QTSqliteGen.  
+// This File was auto generated on <%date%> by QTSqlGen.  
 // Do not modify!!!!!
 // Changes will be overwritten.
 
