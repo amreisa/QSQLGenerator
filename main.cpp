@@ -21,7 +21,7 @@
 //THE SOFTWARE.
 
 #include <QtGui/QApplication>
-#include "QTSqliteGen.h"
+#include "QTSqlGen.h"
 
 quint32 main(int argc, char *argv[])
 {
@@ -31,7 +31,7 @@ quint32 main(int argc, char *argv[])
 	a.setOrganizationName("OpenSource");
 	a.setApplicationName("QTSqliteGen");
 
-    QTSqliteGen w;
+    QTSqlGen w;
     w.show();
     a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     return a.exec();

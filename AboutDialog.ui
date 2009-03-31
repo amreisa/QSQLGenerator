@@ -13,7 +13,7 @@
    <string>About Qt Sqlite Generator</string>
   </property>
   <property name="windowIcon" >
-   <iconset resource="QTSqliteGen.qrc" >
+   <iconset>
     <normaloff>:/templates/Resources/QTSqliteGen.png</normaloff>:/templates/Resources/QTSqliteGen.png</iconset>
   </property>
   <property name="modal" >
@@ -46,7 +46,7 @@
         <string/>
        </property>
        <property name="pixmap" >
-        <pixmap resource="QTSqliteGen.qrc" >:/templates/Resources/About.png</pixmap>
+        <pixmap resource="QTSqlGen.qrc" >:/templates/Resources/About.png</pixmap>
        </property>
        <property name="scaledContents" >
         <bool>true</bool>
@@ -68,7 +68,7 @@
           </font>
          </property>
          <property name="text" >
-          <string>QT Sqlite Code Generator</string>
+          <string>QT Sql Code Generator</string>
          </property>
          <property name="alignment" >
           <set>Qt::AlignCenter</set>
@@ -152,6 +152,7 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
+  <include location="QTSqlGen.qrc" />
   <include location="QTSqliteGen.qrc" />
  </resources>
  <connections/>
