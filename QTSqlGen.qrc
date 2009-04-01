@@ -11,11 +11,11 @@
         <file>Resources/AccessorSourceString</file>
         <file>Resources/AccessorSourceTime</file>
         <file>Resources/CreateVCProj.bat</file>
-        <file>Resources/Database.cpp</file>
-        <file>Resources/Database.h</file>
         <file>Resources/Header</file>
         <file>Resources/Header2</file>
         <file>Resources/License.txt</file>
+        <file>Resources/ODBCDatabase.cpp</file>
+        <file>Resources/ODBCDatabase.h</file>
         <file>Resources/QTSqlGen.png</file>
         <file>Resources/Record.cpp</file>
         <file>Resources/Record.h</file>
@@ -31,6 +31,8 @@
         <file>Resources/SelectorReal</file>
         <file>Resources/SelectorString</file>
         <file>Resources/SelectorTime</file>
+        <file>Resources/SqliteDatabase.cpp</file>
+        <file>Resources/SqliteDatabase.h</file>
         <file>Resources/Table.cpp</file>
         <file>Resources/Table.h</file>
         <file>Resources/TableRoutine</file>

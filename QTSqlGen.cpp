@@ -1476,7 +1476,20 @@ void QTSqlGen::WriteDatabaseFiles()
 
 	QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/Database.h");
+	switch (_source)
+	{
+	case eODBC:
+		templateFile.setFileName(":/templates/Resources/ODBCDatabase.h");
+		break;
+
+	case eSqlite:
+		templateFile.setFileName(":/templates/Resources/SqliteDatabase.h");
+		break;
+
+	default:
+		return;
+	}
+
 	if (templateFile.open(QIODevice::ReadOnly))
 	{
 		QByteArray templateStr = templateFile.readAll();
@@ -1555,7 +1568,20 @@ void QTSqlGen::WriteDatabaseFiles()
 		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 	}
 
-	templateFile.setFileName(":/templates/Resources/Database.cpp");
+	switch (_source)
+	{
+	case eODBC:
+		templateFile.setFileName(":/templates/Resources/ODBCDatabase.cpp");
+		break;
+
+	case eSqlite:
+		templateFile.setFileName(":/templates/Resources/SqliteDatabase.cpp");
+		break;
+
+	default:
+		return;
+	}
+
 	if (templateFile.open(QIODevice::ReadOnly))
 	{
 		QByteArray templateStr = templateFile.readAll();
