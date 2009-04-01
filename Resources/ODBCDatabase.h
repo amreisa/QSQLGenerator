@@ -31,6 +31,18 @@
 
 #include "<%productInclude%>"
 <%includes%>
+
+enum ODBCDrivers
+{
+	eSqlServer2000 = 0,
+	eSqlServer2005 = 1,
+	eSqlServer2008 = 2,
+	eAccess = 3,
+	eMySql = 4,
+	eOracle = 5,
+	ePostgres = 6
+};
+
 // singleton class encapsulating Qt database
 class <%dllExport%> <%productName%>Database
 {
@@ -40,10 +52,19 @@ public:
 
 	void CreateConnection(const QString& connectionName);
 
-	void SetFilePath(const QString& filePath)
-		{ _filePath = filePath; }
-	QString FilePath(void)
-		{ return _filePath; }
+	// Use this to pass a connection string to QT
+	void SetConnectionString(const QString& connectionString)
+		{ _connectionString = connectionString; }
+	QString ConnectionString(void)
+		{ return _connectionString; }
+
+	// Or...use these and a connection string will be created for you
+	void SetODBCDriver(ODBCDrivers odbcDriver);
+	void SetHost(const QString& host);
+	void SetPort(int portNum);
+	void SetDatabase(const QString& database);
+	void SetUserName(const QString& userName);
+	void SetPassword(const QString& password);
 
 	QSqlDatabase Database(void)
 		{ return _database; }
@@ -68,7 +89,6 @@ public:
 		return _database.rollback();
 	}
 
-
 	// Tables
 <%tables%>
 	// Views
@@ -77,8 +97,19 @@ protected:
 <%tablePtrs%>
 
 	QSqlDatabase				_database;
+
+private:
 	QString						_connectionName;
-	QString						_filePath;
+	QString						_connectionString;
+
+	QString						_driverString;
+	QString						_host;
+	QString						_port;
+	QString						_database;
+	QString						_userName;
+	QString						_password;
+
+	void BuildConnectionString(void);
 };
 
 #endif

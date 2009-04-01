@@ -493,18 +493,104 @@ void QTSqlGen::LoadSqliteViewColumns()
 	}
 }
 
-
-
 void QTSqlGen::LoadODBCColumns()
-{
+{	
+	QString tableQuery;
+
+	switch (_schemaSource->currentIndex())
+	{
+	case 0:  //sql server 2008
+	case 1:  //sql server 2005
+	case 2:	 //sql server 2000
+	case 3:  //MS Access
+		tableQuery = "SELECT TOP 1 * FROM <%T%>";
+		break;
+
+	case 4: // My SQL
+	case 6: // Postgres
+		tableQuery = "SELECT * FROM <%T%> LIMIT 1";
+		break;
+
+	case 5: // Oracle
+		tableQuery = "SELECT * from <%T%> WHERE ROWNUM <= 1";
+		break;
+	}
+
+/*		QString selectStatement = tableQuery;
+`		selectStatement.replace("<%T%>", table.toAscii());
+
+		QSqlQuery query(_db);
+
+		if (query.exec(selectStatement)) 
+		{    
+			QSqlRecord rec = query.record();
+
+			for (int i = 
+		}
+		else
+		{		
+			QSqlError se = query.lastError();
+
+			AppendOutput("Exec Failed");
+			AppendOutput(se.text());
+		}
+*/
 }
 
 void QTSqlGen::LoadODBCTables()
 {
+	_tables.clear();
+	_indexes.clear();
+
+	QStringList tables = _db.tables(QSql::Tables);
+	QStringList::const_iterator tableIter = tables.begin();
+    while (tableIter != tables.constEnd())
+	{
+		Table table;
+
+		table._type = table.eTable;
+		table._name = *tableIter;
+
+		_tables.push_back(table);
+
+		tableIter++;
+	}
+
+	AppendOutput("Tables:");
+	TableIter iter = _tables.begin();
+	while (iter != _tables.end())
+	{
+		QString type = ((*iter)._type == (*iter).eTable) ? "   Table: " : "   Index: ";
+		AppendOutput(type +  (*iter)._name);
+		iter++;
+	}
 }
 
 void QTSqlGen::LoadODBCViews()
-{
+{	
+	_views.clear();
+
+	QStringList views = _db.tables(QSql::Views);
+	QStringList::const_iterator viewIter = views.begin();
+    while (viewIter != views.constEnd())
+	{
+		Table aView;
+
+		aView._type = Table::eView;
+		aView._name = *viewIter;
+
+		_views.push_back(aView);
+
+		viewIter++;
+	}
+
+	AppendOutput("Views:");
+	TableIter iter = _views.begin();
+	while (iter != _views.end())
+	{
+		AppendOutput("   " +  (*iter)._name);
+		iter++;
+	}
 }
 
 void QTSqlGen::LoadODBCViewColumns()

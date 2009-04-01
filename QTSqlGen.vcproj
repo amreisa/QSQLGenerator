@@ -560,54 +560,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Resources\Database.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Resources\Database.h"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description=""
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description=""
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\Resources\fieldType"
 				>
 				<FileConfiguration
@@ -1245,18 +1197,6 @@
 			SourceControlFiles="false"
 			>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_AboutDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\GeneratedFiles\Debug\moc_AboutDlg.cpp"
 				>
 				<FileConfiguration
@@ -1269,7 +1209,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_QTSqlGen.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_AboutDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1285,6 +1225,18 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_QTSqlGen.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool

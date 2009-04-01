@@ -32,6 +32,17 @@
 
 static quint32 gConnectionCount(1); 
 
+static char* gConnectionStrings[] = 
+{
+	"Driver={SQL Server Native Client 10.0};Server=<%server%>;Database=<%database%>;Uid=<%user%>;Pwd=<%pass%>;",
+	"Driver={SQL Native Client};Server=<%server%>;Database=<%database%>; Uid=<%user%>;Pwd=<%pass%>;",
+	"Driver={SQL Server};Server=<%server%>;Database=<%database%>;Uid=<%user%>;Pwd=<%pass%>;",
+	"Driver={Microsoft Access Driver (*.mdb)};Dbq=<%database%>;Uid=<%user%>;Pwd=<%pass%>;",
+	"Driver={MySQL ODBC 5.1 Driver};Server=<%server%>;Port=<%port%>;Database=<%database%>;User=<%user%>; Password=<%pass%>;Option=3;",
+	"Driver={Microsoft ODBC for Oracle};Server=<%server%>;Uid=<%user%>;Pwd=<%pass%>;",
+	"Driver={PostgreSQL UNICODE};Server=<%server%>;Port=<%port%>;Database=<%database%>;Uid=<%user%>;Pwd=<%pass%>;"
+};
+
 <%productName%>Database::<%productName%>Database() :
 <%initializers%>
 {
@@ -46,13 +57,108 @@ static quint32 gConnectionCount(1);
 	QSqlDatabase::removeDatabase(_connectionName);
 }
 
+void <%productName%>Database::SetODBCDriver(ODBCDrivers odbcDriver)
+{
+	switch (odbcDriver)
+	{
+	case eSqlServer2000:
+		_driverString = gConnectionStrings[0];
+		break;
+
+	case eSqlServer2005:
+		_driverString = gConnectionStrings[1];
+		break;
+
+	case eSqlServer2008:
+		_driverString = gConnectionStrings[2];
+		break;
+
+	case eAccess:
+		_driverString = gConnectionStrings[3];
+		break;
+
+	case eMySql:
+		_driverString = gConnectionStrings[4];
+		_port = 3306;
+		break;
+
+	case eOracle:
+		_driverString = gConnectionStrings[5];
+		break;
+
+	case ePostgres:
+		_driverString = gConnectionStrings[6];
+		_port = 5432;  // default port
+		break;
+	}
+
+	_connectionString = "";
+}
+
+void <%productName%>Database::SetHost
+(
+	const QString& host
+)
+{
+	_host = host;
+	_connectionString = "";
+}
+
+void <%productName%>Database::SetPort
+(
+	int portNum
+)
+{
+	_port = QString::number(portNum);
+}
+
+void <%productName%>Database::SetDatabase
+(
+	const QString& database
+)
+{
+	_database = database;
+}
+
+void <%productName%>Database::SetUserName
+(
+	const QString& userName
+)
+{
+	_userName = userName;
+}
+
+void <%productName%>Database::SetPassword
+(
+	const QString& password
+)
+{
+	_password = password;
+}
+
 void <%productName%>Database::CreateConnection
 (
 	const QString& connectionName
 )
 {
 	_connectionName = connectionName + QString::number(gConnectionCount++);
-	_database = QSqlDatabase::addDatabase("QSQLITE", _connectionName);
+	_database = QSqlDatabase::addDatabase("QODBC", _connectionName);
+
+	if (_connectionString.length() == 0)
+		BuildConnectionString();
+
+	db.setDatabaseName(_connectionString);
+}
+
+void <%productName%>Database::BuildConnectionString()
+{
+	_driverString.replace("<%server%>", _host.toAscii());
+	_driverString.replace("<%port%>", _port.toAscii());
+	_driverString.replace("<%database%>", _database.toAscii());
+	_driverString.replace("<%user%>", _userName.toAscii());
+	_driverString.replace("<%pass%>", _password.toAscii());
+
+	_connectionString = _driverString;
 }
 
 bool <%productName%>Database::Open()
