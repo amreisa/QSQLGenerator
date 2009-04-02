@@ -29,6 +29,7 @@
 #include <QUuid>
 #include <QSettings>
 #include <QSqlError>
+#include <QVariant>
 
 void InitializeMap(void);
 QMap<QString, Column::Type> gDataMap;
@@ -209,104 +210,108 @@ void QTSqlGen::on__locateTarget_clicked()
 
 void QTSqlGen::on__genDal_clicked()
 {
-	if (_dbPath->text().size() > 0)
+
+	if (_targetPath->text().size() == 0)
+		return;
+
+	switch (_source)
 	{
+	case eODBC:
+		_db = QSqlDatabase::addDatabase("QODBC");
+		break;
+
+	case eSqlite:	
+		if (_dbPath->text().size() == 0)
+			return ;
+
+		_db = QSqlDatabase::addDatabase("QSQLITE");
+		break;
+
+	default:
+		AppendOutput("Invalid Source");
+		return;
+	}
+
+	if (_db.isValid() == false)
+	{
+		QSqlError se;
+	
+		se = _db.lastError();
+
+		AppendOutput(se.text());
+
+		return;
+	}
+
+	switch (_source)
+	{
+	case eODBC:
+		_db.setDatabaseName(_connectionString->text());
+		break;
+
+	case eSqlite:
+		_db.setDatabaseName(_dbPath->text());
+		break;
+
+	}
+
+	if (_db.open())
+	{
+		_output->clear();
+		_headerFiles.clear();
+		_sources.clear();
+		_headers.clear();
+
 		switch (_source)
 		{
 		case eODBC:
-			_db = QSqlDatabase::addDatabase("QODBC");
+			LoadODBCTables();
+			LoadODBCColumns();
 			break;
 
 		case eSqlite:
-			_db = QSqlDatabase::addDatabase("QSQLITE");
+			LoadSqliteTables();
+			LoadSqliteColumns();
 			break;
-
-		default:
-			AppendOutput("Invalid Source");
-			return;
 		}
 
-		if (_db.isValid() == false)
+        GenCode(_tables, "Table");
+
+		switch (_source)
 		{
-			QSqlError se;
+		case eODBC:
+			LoadODBCViews();
+			LoadODBCViewColumns();
+			break;
+
+		case eSqlite:
+		LoadSqliteViews();
+		LoadSqliteViewColumns();
+			break;
+		}
+
+        GenCode(_views, "View");
 		
-			se = _db.lastError();
+		WriteDatabaseFiles();
+		WriteStaticFiles();
+		WriteHeaderFile();
+		WriteExportHeaderFile();
 
-			AppendOutput(se.text());
+		if (_replaceProject->isChecked())
+			WriteProject();
+	}
+	else
+	{
+		QSqlError se = _db.lastError();
 
-			return;
-		}
+		QStringList drivers = QSqlDatabase::drivers();
 
-		switch (_source)
-		{
-		case eODBC:
-			_db.setDatabaseName(_connectionString->text());
-			break;
+		AppendOutput("Open Database Error");
+		AppendOutput(se.text());
 
-		case eSqlite:
-			_db.setDatabaseName(_dbPath->text());
-			break;
-
-		}
-
-		if (_db.open())
-		{
-			_output->clear();
-			_headerFiles.clear();
-			_sources.clear();
-			_headers.clear();
-
-			switch (_source)
-			{
-			case eODBC:
-				LoadODBCTables();
-				LoadODBCColumns();
-				break;
-
-			case eSqlite:
-				LoadSqliteTables();
-				LoadSqliteColumns();
-				break;
-			}
-
-            GenCode(_tables, "Table");
-
-			switch (_source)
-			{
-			case eODBC:
-				LoadODBCViews();
-				LoadODBCViewColumns();
-				break;
-
-			case eSqlite:
-			LoadSqliteViews();
-			LoadSqliteViewColumns();
-				break;
-			}
-
-            GenCode(_views, "View");
-			
-			WriteDatabaseFiles();
-			WriteStaticFiles();
-			WriteHeaderFile();
-			WriteExportHeaderFile();
-
-			if (_replaceProject->isChecked())
-				WriteProject();
-		}
-		else
-		{
-			QSqlError se = _db.lastError();
-
-			QStringList drivers = QSqlDatabase::drivers();
-
-			AppendOutput("Open Database Error");
-			AppendOutput(se.text());
-
-			AppendOutput("Drivers");
-			for (int i = 0; i < drivers.size(); ++i)
-				AppendOutput("   " + drivers.at(i));
-		}
+		AppendOutput("Drivers");
+		for (int i = 0; i < drivers.size(); ++i)
+			AppendOutput("   " + drivers.at(i));
 	}
 }
 
@@ -507,8 +512,11 @@ void QTSqlGen::LoadODBCColumns()
 		break;
 
 	case 4: // My SQL
-	case 6: // Postgres
 		tableQuery = "SELECT * FROM <%T%> LIMIT 1";
+		break;
+
+	case 6: // Postgres
+		tableQuery = "SELECT * FROM \"<%T%>\" LIMIT 1";
 		break;
 
 	case 5: // Oracle
@@ -516,8 +524,11 @@ void QTSqlGen::LoadODBCColumns()
 		break;
 	}
 
-/*		QString selectStatement = tableQuery;
-`		selectStatement.replace("<%T%>", table.toAscii());
+	TableIter iter = _tables.begin();
+	while (iter != _tables.end())
+	{
+		QString selectStatement = tableQuery;
+		selectStatement.replace("<%T%>", (*iter)._name);
 
 		QSqlQuery query(_db);
 
@@ -525,7 +536,26 @@ void QTSqlGen::LoadODBCColumns()
 		{    
 			QSqlRecord rec = query.record();
 
-			for (int i = 
+			for (int i = 0; i < rec.count(); i++)
+			{
+				Column column;
+				QSqlField sqlField = rec.field(i);
+
+				column._name = sqlField.name();
+
+				switch (sqlField.type())
+				{
+				case QVariant::Int: column._type = Column::eInt; break;
+				case QVariant::String: column._type = Column::eText; break;
+				case QVariant::UInt: column._type = Column::eUInt; break;
+				case QVariant::DateTime: column._type = Column::eDateTime; break;
+				case QVariant::Date: column._type = Column::eDate; break;
+				case QVariant::Time: column._type = Column::eTime; break;
+				case QVariant::Double: column._type = Column::eReal; break;
+				case QVariant::Bool: column._type = Column::eBoolean; break;
+				default: column._type = Column::eUnknown; break;
+				}
+			}
 		}
 		else
 		{		
@@ -534,7 +564,9 @@ void QTSqlGen::LoadODBCColumns()
 			AppendOutput("Exec Failed");
 			AppendOutput(se.text());
 		}
-*/
+
+		iter++;
+	}
 }
 
 void QTSqlGen::LoadODBCTables()
