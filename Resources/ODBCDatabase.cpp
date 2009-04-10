@@ -117,7 +117,7 @@ void <%productName%>Database::SetDatabase
 	const QString& database
 )
 {
-	_database = database;
+	_databaseName = database;
 }
 
 void <%productName%>Database::SetUserName
@@ -154,7 +154,7 @@ void <%productName%>Database::BuildConnectionString()
 {
 	_driverString.replace("<%server%>", _host.toAscii());
 	_driverString.replace("<%port%>", _port.toAscii());
-	_driverString.replace("<%database%>", _database.toAscii());
+	_driverString.replace("<%database%>", _databaseName.toAscii());
 	_driverString.replace("<%user%>", _userName.toAscii());
 	_driverString.replace("<%pass%>", _password.toAscii());
 
@@ -167,12 +167,7 @@ bool <%productName%>Database::Open()
 
 	if ((result = _database.isOpen()) == false)
 	{
-		if (_filePath.size())
-		{
-			_database.setDatabaseName(_filePath);
-			
-			result = _database.open();
-		}
+		result = _database.open();
 	}
 
 	return result;

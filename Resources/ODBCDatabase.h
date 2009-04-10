@@ -105,7 +105,7 @@ private:
 	QString						_driverString;
 	QString						_host;
 	QString						_port;
-	QString						_database;
+	QString						_databaseName;
 	QString						_userName;
 	QString						_password;
 

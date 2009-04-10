@@ -89,6 +89,9 @@ private:
 	void LoadODBCViews(void);
     void LoadODBCViewColumns(void);
 	
+	void LoadProjects(void);
+	void SaveProjects(void);
+
 	void StandardReplacements(QByteArray& replaceMe);
 
 	QSqlDatabase				_db;

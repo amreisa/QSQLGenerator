@@ -22,6 +22,8 @@
 
 #include "QTSqlGen.h"
 #include "AboutDlg.h"
+#include "SqlProjects.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
@@ -34,12 +36,12 @@
 void InitializeMap(void);
 QMap<QString, Column::Type> gDataMap;
 
+
 const QString kTargetPaths("TargetPaths");
 const QString kLastDBPath("lastDBPath");
 const QString kWriteProject("WriteProject");
 const QString kDynamic("Dynamic");
 const QString kSource("Source");
-
 
 QTSqlGen::QTSqlGen
 (
@@ -151,7 +153,7 @@ void QTSqlGen::SetProductName
 	}
 	else
 	{
-		_productName.clear();
+		_productName = databaseName;
 	}
 
 	_productName[0] = QChar(_productName[0]).toUpper();
@@ -200,11 +202,14 @@ void QTSqlGen::on__locateTarget_clicked()
 
 		_targetPath->setText(s);	
 
-		QSettings settings;
+		if (_source == eSqlite)
+		{
+			QSettings settings;
 
-		settings.beginGroup(kTargetPaths);
-        settings.setValue(regPath, s);
-		settings.endGroup();
+			settings.beginGroup(kTargetPaths);
+			settings.setValue(regPath, s);
+			settings.endGroup();
+		}
 	}
 }
 
@@ -218,6 +223,8 @@ void QTSqlGen::on__genDal_clicked()
 	{
 	case eODBC:
 		_db = QSqlDatabase::addDatabase("QODBC");
+//		if (lineEdit_productName->text().size() == 0)
+//			AppendOutput("Supply a Product Name");
 		break;
 
 	case eSqlite:	
@@ -247,6 +254,7 @@ void QTSqlGen::on__genDal_clicked()
 	{
 	case eODBC:
 		_db.setDatabaseName(_connectionString->text());
+//		SetProductName(lineEdit_productName->text());
 		break;
 
 	case eSqlite:
@@ -555,6 +563,8 @@ void QTSqlGen::LoadODBCColumns()
 				case QVariant::Bool: column._type = Column::eBoolean; break;
 				default: column._type = Column::eUnknown; break;
 				}
+
+				(*iter)._columns.push_back(column);
 			}
 		}
 		else
@@ -1808,6 +1818,16 @@ void QTSqlGen::on__databaseType_currentIndexChanged
 	settings.setValue(kSource, source);
 	
 }
+
+
+void QTSqlGen::LoadProjects()
+{
+}
+
+void QTSqlGen::SaveProjects()
+{
+}
+
 void InitializeMap()
 {	
 	gDataMap["text"] = Column::eText; 
