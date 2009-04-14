@@ -548,7 +548,47 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Resources\add.png"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\Resources\CreateVCProj.bat"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Resources\delete.png"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -688,6 +728,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Resources\ODBCDrivers.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\Resources\pro"
 				>
 				<FileConfiguration
@@ -737,7 +797,7 @@
 						Name="VCCustomBuildTool"
 						Description="Rcc&apos;ing QTSqlGen.qrc..."
 						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -name &quot;QTSqlGen&quot; -no-compress &quot;.\QTSqlGen.qrc&quot; -o .\qrc_QTSqlGen.cpp&#x0D;&#x0A;"
-						AdditionalDependencies=".\QTSqlGen.qrc;.\Resources\About.png;.\Resources\Accessor;.\Resources\AccessorSourceBoolean;.\Resources\AccessorSourceDate;.\Resources\AccessorSourceDateTime;.\Resources\AccessorSourceGUID;.\Resources\AccessorSourceInt;.\Resources\AccessorSourceReal;.\Resources\AccessorSourceString;.\Resources\AccessorSourceTime;.\Resources\CreateVCProj.bat;.\Resources\Header;.\Resources\Header2;.\Resources\License.txt;.\Resources\ODBCDatabase.cpp;.\Resources\ODBCDatabase.h;.\Resources\QTSqlGen.png;.\Resources\Record.cpp;.\Resources\Record.h;.\Resources\RecordBase.cpp;.\Resources\RecordBase.h;.\Resources\SelectionCriteria.cpp;.\Resources\SelectionCriteria.h;.\Resources\SelectorBoolean;.\Resources\SelectorDate;.\Resources\SelectorDateTime;.\Resources\SelectorGUID;.\Resources\SelectorInt;.\Resources\SelectorReal;.\Resources\SelectorString;.\Resources\SelectorTime;.\Resources\SqliteDatabase.cpp;.\Resources\SqliteDatabase.h;.\Resources\Table.cpp;.\Resources\Table.h;.\Resources\TableRoutine;.\Resources\View.cpp;.\Resources\View.h;.\Resources\fieldType;.\Resources\pro"
+						AdditionalDependencies=".\QTSqlGen.qrc;.\Resources\About.png;.\Resources\Accessor;.\Resources\AccessorSourceBoolean;.\Resources\AccessorSourceDate;.\Resources\AccessorSourceDateTime;.\Resources\AccessorSourceGUID;.\Resources\AccessorSourceInt;.\Resources\AccessorSourceReal;.\Resources\AccessorSourceString;.\Resources\AccessorSourceTime;.\Resources\CreateVCProj.bat;.\Resources\Header;.\Resources\Header2;.\Resources\License.txt;.\Resources\ODBCDatabase.cpp;.\Resources\ODBCDatabase.h;.\Resources\ODBCDrivers.h;.\Resources\QTSqlGen.png;.\Resources\Record.cpp;.\Resources\Record.h;.\Resources\RecordBase.cpp;.\Resources\RecordBase.h;.\Resources\SelectionCriteria.cpp;.\Resources\SelectionCriteria.h;.\Resources\SelectorBoolean;.\Resources\SelectorDate;.\Resources\SelectorDateTime;.\Resources\SelectorGUID;.\Resources\SelectorInt;.\Resources\SelectorReal;.\Resources\SelectorString;.\Resources\SelectorTime;.\Resources\SqliteDatabase.cpp;.\Resources\SqliteDatabase.h;.\Resources\Table.cpp;.\Resources\Table.h;.\Resources\TableRoutine;.\Resources\View.cpp;.\Resources\View.h;.\Resources\add.png;.\Resources\delete.png;.\Resources\fieldType;.\Resources\pro"
 						Outputs=".\qrc_QTSqlGen.cpp"
 					/>
 				</FileConfiguration>
@@ -748,7 +808,7 @@
 						Name="VCCustomBuildTool"
 						Description="Rcc&apos;ing QTSqlGen.qrc..."
 						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -name &quot;QTSqlGen&quot; -no-compress &quot;.\QTSqlGen.qrc&quot; -o .\qrc_QTSqlGen.cpp&#x0D;&#x0A;"
-						AdditionalDependencies=".\QTSqlGen.qrc;.\Resources\About.png;.\Resources\Accessor;.\Resources\AccessorSourceBoolean;.\Resources\AccessorSourceDate;.\Resources\AccessorSourceDateTime;.\Resources\AccessorSourceGUID;.\Resources\AccessorSourceInt;.\Resources\AccessorSourceReal;.\Resources\AccessorSourceString;.\Resources\AccessorSourceTime;.\Resources\CreateVCProj.bat;.\Resources\Header;.\Resources\Header2;.\Resources\License.txt;.\Resources\ODBCDatabase.cpp;.\Resources\ODBCDatabase.h;.\Resources\QTSqlGen.png;.\Resources\Record.cpp;.\Resources\Record.h;.\Resources\RecordBase.cpp;.\Resources\RecordBase.h;.\Resources\SelectionCriteria.cpp;.\Resources\SelectionCriteria.h;.\Resources\SelectorBoolean;.\Resources\SelectorDate;.\Resources\SelectorDateTime;.\Resources\SelectorGUID;.\Resources\SelectorInt;.\Resources\SelectorReal;.\Resources\SelectorString;.\Resources\SelectorTime;.\Resources\SqliteDatabase.cpp;.\Resources\SqliteDatabase.h;.\Resources\Table.cpp;.\Resources\Table.h;.\Resources\TableRoutine;.\Resources\View.cpp;.\Resources\View.h;.\Resources\fieldType;.\Resources\pro"
+						AdditionalDependencies=".\QTSqlGen.qrc;.\Resources\About.png;.\Resources\Accessor;.\Resources\AccessorSourceBoolean;.\Resources\AccessorSourceDate;.\Resources\AccessorSourceDateTime;.\Resources\AccessorSourceGUID;.\Resources\AccessorSourceInt;.\Resources\AccessorSourceReal;.\Resources\AccessorSourceString;.\Resources\AccessorSourceTime;.\Resources\CreateVCProj.bat;.\Resources\Header;.\Resources\Header2;.\Resources\License.txt;.\Resources\ODBCDatabase.cpp;.\Resources\ODBCDatabase.h;.\Resources\ODBCDrivers.h;.\Resources\QTSqlGen.png;.\Resources\Record.cpp;.\Resources\Record.h;.\Resources\RecordBase.cpp;.\Resources\RecordBase.h;.\Resources\SelectionCriteria.cpp;.\Resources\SelectionCriteria.h;.\Resources\SelectorBoolean;.\Resources\SelectorDate;.\Resources\SelectorDateTime;.\Resources\SelectorGUID;.\Resources\SelectorInt;.\Resources\SelectorReal;.\Resources\SelectorString;.\Resources\SelectorTime;.\Resources\SqliteDatabase.cpp;.\Resources\SqliteDatabase.h;.\Resources\Table.cpp;.\Resources\Table.h;.\Resources\TableRoutine;.\Resources\View.cpp;.\Resources\View.h;.\Resources\add.png;.\Resources\delete.png;.\Resources\fieldType;.\Resources\pro"
 						Outputs=".\qrc_QTSqlGen.cpp"
 					/>
 				</FileConfiguration>

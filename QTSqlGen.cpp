@@ -24,6 +24,7 @@
 #include "AboutDlg.h"
 #include "SqlProjects.h"
 
+#include <QtAlgorithms>
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
@@ -36,13 +37,6 @@
 void InitializeMap(void);
 QMap<QString, Column::Type> gDataMap;
 
-
-const QString kTargetPaths("TargetPaths");
-const QString kLastDBPath("lastDBPath");
-const QString kWriteProject("WriteProject");
-const QString kDynamic("Dynamic");
-const QString kSource("Source");
-
 QTSqlGen::QTSqlGen
 (
 	QWidget* parent, 
@@ -51,57 +45,13 @@ QTSqlGen::QTSqlGen
 	QDialog(parent, flags),
 	_projectGUID(QUuid::createUuid().toString().toUpper()),
 	_now(QDate::currentDate()),
-	_source(eODBC)
+	_currentProject(NULL)
 {
 	InitializeMap();
 
 	setupUi(this);
 
-	QSettings settings;
-
-	QString lastPath = settings.value(kLastDBPath).toString();
-	if (lastPath.size())
-	{
-		if (QFile::exists(lastPath))
-		{
-			_dbPath->setText(lastPath);
-
-			SetProductName(lastPath);
-
-			settings.beginGroup(kTargetPaths);
-			QString regPath = _dbPath->text();
-				
-			regPath.replace("/", ".");
-
-			QString lastTarget = settings.value(regPath).toString();
-			settings.endGroup();
-
-			if (lastTarget.size())
-				_targetPath->setText(lastTarget);
-
-		}
-		else
-			AppendOutput("Saved database source not found.");
-	}
-
-	_replaceProject->setChecked(settings.value(kWriteProject).toBool());
-	_dynamicRadio->setChecked(settings.value(kDynamic).toBool());
-	_staticRadio->setChecked(settings.value(kDynamic).toBool() == false);
-
-	switch (settings.value(kSource, 0).toInt())
-	{
-	case 0:
-		_source = eODBC;
-		_databaseType->setCurrentIndex(0);
-		_databaseStack->setCurrentIndex(0);
-		break;
-
-	case 1:
-		_source = eSqlite;
-		_databaseType->setCurrentIndex(1);
-		_databaseStack->setCurrentIndex(1);
-		break;
-	}
+	LoadProjects();
 
 	QStringList paths = QCoreApplication::libraryPaths();
 
@@ -135,9 +85,11 @@ void QTSqlGen::on__replaceProject_stateChanged
 		break;
 	}
 
-	QSettings settings;
-
-	settings.setValue(kWriteProject, newState);
+	if (_currentProject != NULL)
+	{
+		_currentProject->_writeProject = newState;
+		_currentProject->_dirty = true;
+	}
 }
 
 void QTSqlGen::SetProductName
@@ -166,60 +118,44 @@ void QTSqlGen::SetProductName
  {
     QString s = QFileDialog::getOpenFileName(this,
 		"Select a SQLite File", QDir::homePath(), "SQLite (*.dat *.db *.sdb *s3db)");
-	if (s.size() > 0)
+	if (_currentProject != NULL && s.size() > 0)
 	{
 		_dbPath->setText(s);	
 
-		QSettings settings;
-
-        settings.setValue(kLastDBPath, s);
-
-		settings.beginGroup(kTargetPaths);
-		
-		QString regPath = _dbPath->text();
-				
-		regPath.replace("/", ".");
-		QString lastTarget = settings.value(regPath).toString();
-		settings.endGroup();
-
-		if (lastTarget.size())
-			_targetPath->setText(lastTarget);
-
-		SetProductName(s);
+		_currentProject->_databasePath = s;
+		_currentProject->_dirty = true;
 	}
  }
 
 void QTSqlGen::on__locateTarget_clicked()
 {    
-	QString s = QFileDialog::getExistingDirectory(this, "Select the target directory for the source files.", 
-		QDir::homePath());
-
-	if (s.size() > 0)
+	if (_currentProject != NULL)
 	{
-		QString regPath = _dbPath->text();
+		QString s = QFileDialog::getExistingDirectory(this, "Select the target directory for the source files.", 
+			QDir::homePath());
 
-		regPath.replace("/", ".");
-
-		_targetPath->setText(s);	
-
-		if (_source == eSqlite)
+		if (s.size() > 0)
 		{
-			QSettings settings;
+			QString regPath = _dbPath->text();
 
-			settings.beginGroup(kTargetPaths);
-			settings.setValue(regPath, s);
-			settings.endGroup();
+			regPath.replace("/", ".");
+
+			_targetPath->setText(s);	
+			_currentProject->_targetPath = s;
+			_currentProject->_dirty = true;
 		}
 	}
 }
 
 void QTSqlGen::on__genDal_clicked()
 {
+	if (_currentProject == NULL)
+		return;
 
 	if (_targetPath->text().size() == 0)
 		return;
 
-	switch (_source)
+	switch (_currentProject->_sourceType)
 	{
 	case eODBC:
 		_db = QSqlDatabase::addDatabase("QODBC");
@@ -250,7 +186,7 @@ void QTSqlGen::on__genDal_clicked()
 		return;
 	}
 
-	switch (_source)
+	switch (_currentProject->_sourceType)
 	{
 	case eODBC:
 		_db.setDatabaseName(_connectionString->text());
@@ -270,7 +206,7 @@ void QTSqlGen::on__genDal_clicked()
 		_sources.clear();
 		_headers.clear();
 
-		switch (_source)
+		switch (_currentProject->_sourceType)
 		{
 		case eODBC:
 			LoadODBCTables();
@@ -285,7 +221,7 @@ void QTSqlGen::on__genDal_clicked()
 
         GenCode(_tables, "Table");
 
-		switch (_source)
+		switch (_currentProject->_sourceType)
 		{
 		case eODBC:
 			LoadODBCViews();
@@ -1582,9 +1518,11 @@ void QTSqlGen::on__dynamicRadio_toggled
 	bool state
 )
 {
-	QSettings settings;
-
-	settings.setValue(kDynamic, state);
+	if (_currentProject != NULL)
+	{
+		_currentProject->_dynamicLibrary = state;
+		_currentProject->_dirty = true;
+	}
 }
 
 void QTSqlGen::on__staticRadio_toggled
@@ -1592,9 +1530,11 @@ void QTSqlGen::on__staticRadio_toggled
 	bool state
 )
 {
-	QSettings settings;
-
-	settings.setValue(kDynamic, state == false);
+	if (_currentProject != NULL)
+	{
+		_currentProject->_dynamicLibrary = state == false;
+		_currentProject->_dirty = true;
+	}
 }
 
 void QTSqlGen::WriteDatabaseFiles()
@@ -1604,7 +1544,7 @@ void QTSqlGen::WriteDatabaseFiles()
 
 	QFile templateFile;
 
-	switch (_source)
+	switch (_currentProject->_sourceType)
 	{
 	case eODBC:
 		templateFile.setFileName(":/templates/Resources/ODBCDatabase.h");
@@ -1696,7 +1636,7 @@ void QTSqlGen::WriteDatabaseFiles()
 		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 	}
 
-	switch (_source)
+	switch (_currentProject->_sourceType)
 	{
 	case eODBC:
 		templateFile.setFileName(":/templates/Resources/ODBCDatabase.cpp");
@@ -1792,6 +1732,42 @@ void QTSqlGen::WriteDatabaseFiles()
 		
 		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 	}
+
+	if (_currentProject->_sourceType == eODBC)
+	{
+		templateFile.setFileName(":/templates/Resources/ODBCDatabase.h");
+	
+		if (templateFile.open(QIODevice::ReadOnly))
+		{
+			QByteArray templateStr = templateFile.readAll();
+
+			QString srcFilePath = _targetPath->text() + "/" + "ODBCDrivers.h";
+			QFile odbcHeaderFile;
+
+			odbcHeaderFile.setFileName(srcFilePath);
+			if (odbcHeaderFile.open(QIODevice::WriteOnly))
+			{
+				AddHeaderFile("ODBCDrivers.h");
+			
+				odbcHeaderFile.write(templateStr);
+
+				AppendOutput("ODBCDrivers.h written");
+				odbcHeaderFile.close();
+			}
+			else
+			{
+				AppendOutput("Error opening: " + srcFilePath);
+			}
+
+			templateFile.close();
+		}
+		else
+		{
+			QFile::FileError fileError = templateFile.error();
+			
+			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
+		}
+	}
 }
 
 void QTSqlGen::on__databaseType_currentIndexChanged
@@ -1803,29 +1779,147 @@ void QTSqlGen::on__databaseType_currentIndexChanged
 	switch (source)
 	{
 	case 0:
+		_currentProject->_sourceType = eODBC;
+		_databaseStack->setCurrentIndex(0);
+		break;
+
+	case 1:
+		_currentProject->_sourceType = eSqlite;
+		_databaseStack->setCurrentIndex(1);
+		break;
+	}
+
+//	QSettings settings;
+
+//	settings.setValue(kSource, source);
+	
+}
+
+const QString kProjects("Projects");
+const QString kProjectName("ProjectName");
+const QString kDatabasePath("DatabasePath");
+const QString kTargetPath("TargetPath");
+const QString kWriteProject("WriteProject");
+const QString kDynamic("Dynamic");
+const QString kSourceType("SourceType");
+
+void QTSqlGen::LoadProjects()
+{	
+	QSettings settings;
+	SqlProject* sqlProject(NULL);
+
+	settings.beginGroup(kProjects);
+
+	QStringList projects = settings.childGroups();
+	if (projects.size() > 0)
+	{
+		QList<QString>::iterator project = projects.begin();
+		while (project != projects.end())
+		{
+			settings.beginGroup(*project);
+
+			SqlProject* sqlProject = new SqlProject;
+
+			sqlProject->_projectName = settings.value(kProjectName).toString();
+			sqlProject->_targetPath = settings.value(kTargetPath).toString();
+			sqlProject->_sourceType = (DatabaseSourceType) settings.value(kSourceType).toInt();
+			sqlProject->_dynamicLibrary = settings.value(kDynamic).toBool();
+			sqlProject->_writeProject = settings.value(kWriteProject).toBool();
+			sqlProject->_databasePath = settings.value(kDatabasePath).toString();
+
+			_projects.push_back(sqlProject);
+			if (_currentProject == NULL)
+				SetCurrentProject(_currentProject);
+
+			settings.endGroup();
+
+			project++;
+		}
+	}
+	else
+	{
+	}
+
+	settings.endGroup();
+
+/*	QString lastPath = settings.value(kLastDBPath).toString();
+	if (lastPath.size())
+	{
+		if (QFile::exists(lastPath))
+		{
+			_dbPath->setText(lastPath);
+
+			SetProductName(lastPath);
+
+			settings.beginGroup(kTargetPaths);
+			QString regPath = _dbPath->text();
+				
+			regPath.replace("/", ".");
+
+			QString lastTarget = settings.value(regPath).toString();
+			settings.endGroup();
+
+			if (lastTarget.size())
+				_targetPath->setText(lastTarget);
+
+		}
+		else
+			AppendOutput("Saved database source not found.");
+	}
+
+	_replaceProject->setChecked(settings.value(kWriteProject).toBool());
+	_dynamicRadio->setChecked(settings.value(kDynamic).toBool());
+	_staticRadio->setChecked(settings.value(kDynamic).toBool() == false);
+
+	switch (settings.value(kSource, 0).toInt())
+	{
+	case 0:
 		_source = eODBC;
+		_databaseType->setCurrentIndex(0);
 		_databaseStack->setCurrentIndex(0);
 		break;
 
 	case 1:
 		_source = eSqlite;
+		_databaseType->setCurrentIndex(1);
 		_databaseStack->setCurrentIndex(1);
 		break;
 	}
-
-	QSettings settings;
-
-	settings.setValue(kSource, source);
-	
-}
-
-
-void QTSqlGen::LoadProjects()
-{
+*/
 }
 
 void QTSqlGen::SaveProjects()
 {
+}
+
+void QTSqlGen::SetCurrentProject
+(
+	SqlProject* sqlProject
+)
+{
+	if (_currentProject != NULL && _currentProject->_dirty)
+	{
+		SqlProjectIter iter = qFind(_projects.begin(), _projects.end(), _currentProject);
+		if (iter != _projects.end())
+			_projects.erase(iter);
+
+		_projects.push_front(_currentProject);
+		_currentProject->_dirty = false;
+	}
+
+	if (sqlProject != NULL)
+	{
+		_currentProject = sqlProject;
+
+		switch (_currentProject->_sourceType)
+		{
+		case eODBC:
+			break;
+
+		case eSqlite:
+			break;
+		}
+	}
 }
 
 void InitializeMap()

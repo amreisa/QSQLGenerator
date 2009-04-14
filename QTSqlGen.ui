@@ -41,6 +41,58 @@
      <item>
       <widget class="QComboBox" name="_productNames" />
      </item>
+     <item>
+      <widget class="QPushButton" name="_newProject" >
+       <property name="minimumSize" >
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize" >
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="contextMenuPolicy" >
+        <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="statusTip" >
+        <string>New Project</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="QTSqlGen.qrc" >
+         <normaloff>:/templates/Resources/add.png</normaloff>:/templates/Resources/add.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="_deleteProject" >
+       <property name="minimumSize" >
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize" >
+        <size>
+         <width>40</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="contextMenuPolicy" >
+        <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="statusTip" >
+        <string>Delete Current Project</string>
+       </property>
+       <property name="icon" >
+        <iconset resource="QTSqlGen.qrc" >
+         <normaloff>:/templates/Resources/delete.png</normaloff>:/templates/Resources/delete.png</iconset>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

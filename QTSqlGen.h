@@ -27,13 +27,9 @@
 #include <QDialog>
 #include <QtSql>
 #include "ui_QTSqlGen.h"
-#include "Table.h"
 
-enum DatabaseSourceType
-{
-	eODBC,
-	eSqlite
-};
+#include "Table.h"
+#include "SqlProjects.h"
 
 class QTSqlGen : 
 	public QDialog, 
@@ -91,6 +87,7 @@ private:
 	
 	void LoadProjects(void);
 	void SaveProjects(void);
+	void SetCurrentProject(SqlProject* sqlProject);
 
 	void StandardReplacements(QByteArray& replaceMe);
 
@@ -107,7 +104,8 @@ private:
 	QString						_headers;
 	QString						_sources;
 	QDate						_now;
-	DatabaseSourceType			_source;
+	SqlProjects					_projects;
+	SqlProject*					_currentProject;
 };
 
 #endif // DALGEN_H

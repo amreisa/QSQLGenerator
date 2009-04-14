@@ -16,6 +16,7 @@
         <file>Resources/License.txt</file>
         <file>Resources/ODBCDatabase.cpp</file>
         <file>Resources/ODBCDatabase.h</file>
+        <file>Resources/ODBCDrivers.h</file>
         <file>Resources/QTSqlGen.png</file>
         <file>Resources/Record.cpp</file>
         <file>Resources/Record.h</file>
@@ -38,6 +39,8 @@
         <file>Resources/TableRoutine</file>
         <file>Resources/View.cpp</file>
         <file>Resources/View.h</file>
+        <file>Resources/add.png</file>
+        <file>Resources/delete.png</file>
         <file>Resources/fieldType</file>
         <file>Resources/pro</file>
     </qresource>
