@@ -1788,11 +1788,6 @@ void QTSqlGen::on__databaseType_currentIndexChanged
 		_databaseStack->setCurrentIndex(1);
 		break;
 	}
-
-//	QSettings settings;
-
-//	settings.setValue(kSource, source);
-	
 }
 
 const QString kProjects("Projects");
@@ -1802,6 +1797,7 @@ const QString kTargetPath("TargetPath");
 const QString kWriteProject("WriteProject");
 const QString kDynamic("Dynamic");
 const QString kSourceType("SourceType");
+const QString kODBCDriver("ODBCDriver");
 
 void QTSqlGen::LoadProjects()
 {	
@@ -1821,15 +1817,25 @@ void QTSqlGen::LoadProjects()
 			SqlProject* sqlProject = new SqlProject;
 
 			sqlProject->_projectName = settings.value(kProjectName).toString();
-			sqlProject->_targetPath = settings.value(kTargetPath).toString();
-			sqlProject->_sourceType = (DatabaseSourceType) settings.value(kSourceType).toInt();
-			sqlProject->_dynamicLibrary = settings.value(kDynamic).toBool();
-			sqlProject->_writeProject = settings.value(kWriteProject).toBool();
-			sqlProject->_databasePath = settings.value(kDatabasePath).toString();
 
-			_projects.push_back(sqlProject);
-			if (_currentProject == NULL)
-				SetCurrentProject(_currentProject);
+			if (SqlProject::FindProject(sqlProject->_projectName, _projects) == NULL) // no duplicate project names
+			{
+				sqlProject->_targetPath = settings.value(kTargetPath).toString();
+				sqlProject->_sourceType = (DatabaseSourceType) settings.value(kSourceType).toInt();
+				sqlProject->_dynamicLibrary = settings.value(kDynamic).toBool();
+				sqlProject->_writeProject = settings.value(kWriteProject).toBool();
+				sqlProject->_databasePath = settings.value(kDatabasePath).toString();
+				sqlProject->_odbcDriver = (ODBCDrivers) settings.value(kODBCDriver, QVariant(0)).toInt();
+
+				_projects.push_back(sqlProject);
+
+				if (_currentProject == NULL)
+					SetCurrentProject(_currentProject);
+			}
+			else
+			{
+				delete sqlProject;
+			}
 
 			settings.endGroup();
 
@@ -1867,24 +1873,6 @@ void QTSqlGen::LoadProjects()
 			AppendOutput("Saved database source not found.");
 	}
 
-	_replaceProject->setChecked(settings.value(kWriteProject).toBool());
-	_dynamicRadio->setChecked(settings.value(kDynamic).toBool());
-	_staticRadio->setChecked(settings.value(kDynamic).toBool() == false);
-
-	switch (settings.value(kSource, 0).toInt())
-	{
-	case 0:
-		_source = eODBC;
-		_databaseType->setCurrentIndex(0);
-		_databaseStack->setCurrentIndex(0);
-		break;
-
-	case 1:
-		_source = eSqlite;
-		_databaseType->setCurrentIndex(1);
-		_databaseStack->setCurrentIndex(1);
-		break;
-	}
 */
 }
 
@@ -1914,11 +1902,23 @@ void QTSqlGen::SetCurrentProject
 		switch (_currentProject->_sourceType)
 		{
 		case eODBC:
+			_databaseType->setCurrentIndex(0);
+			_databaseStack->setCurrentIndex(0);
 			break;
 
 		case eSqlite:
+			_databaseType->setCurrentIndex(1);
+			_databaseStack->setCurrentIndex(1);
 			break;
 		}
+
+		_targetPath->setText(_currentProject->_targetPath);
+		_locatePath->setText(_currentProject->_databasePath);
+		_connectionString->setText(_currentProject->_databasePath);
+		_replaceProject->setChecked(_currentProject->_writeProject);
+		_dynamicRadio->setChecked(_currentProject->_dynamicLibrary);
+		_staticRadio->setChecked(_currentProject->_dynamicLibrary == false);
+
 	}
 }
 

@@ -18,6 +18,7 @@ SqlProject::SqlProject
 	_writeProject = copyMe._writeProject;
 	_dynamicLibrary = copyMe._dynamicLibrary;
 	_sourceType = copyMe._sourceType;
+	_odbcDriver = copyMe._odbcDriver;
 	_dirty = copyMe._dirty;
 }
 
@@ -25,3 +26,43 @@ SqlProject::~SqlProject()
 {
 }
 
+SqlProject* SqlProject::FindProject
+(
+	const QString& projectName,
+	SqlProjects& projects
+)
+{
+	SqlProject* result(NULL);
+
+	SqlProjectIter projectIter = projects.begin();
+	while (projectIter != projects.end())
+	{
+		if ((*projectIter)->_projectName == projectName)
+		{
+			result = *projectIter;
+			break;
+		}
+
+		projectIter++;
+	}
+
+	return result;
+}
+
+QStringList GetProjectNames
+(
+	SqlProjects& projects
+)
+{
+	QStringList results;
+
+	SqlProjectIter projectIter = projects.begin();
+	while (projectIter != projects.end())
+	{
+		results.push_back((*projectIter)->_projectName);
+
+		projectIter++;
+	}
+
+	return results;
+}

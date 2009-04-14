@@ -3,6 +3,7 @@
 
 #include <QList>
 #include <QString>
+#include <QStringList>
 
 enum DatabaseSourceType
 {
@@ -12,6 +13,12 @@ enum DatabaseSourceType
 };
 
 #include ".\\Resources\\ODBCDrivers.h"
+
+class SqlProject;
+
+typedef QList<SqlProject*> SqlProjects;
+typedef QList<SqlProject*>::iterator SqlProjectIter;
+typedef QList<SqlProject*>::const_iterator SqlProjectConstIter;
 
 class SqlProject
 {
@@ -28,11 +35,10 @@ public:
 	DatabaseSourceType			_sourceType;
 	ODBCDrivers					_odbcDriver;
 	bool						_dirty;
-};
 
-typedef QList<SqlProject*> SqlProjects;
-typedef QList<SqlProject*>::iterator SqlProjectIter;
-typedef QList<SqlProject*>::const_iterator SqlProjectConstIter;
+	static SqlProject* FindProject(const QString& name, SqlProjects& projects);
+	static QStringList GetProjectNames(SqlProjects& projects);
+};
 
 #endif
 
