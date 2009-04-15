@@ -39,7 +39,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="_productNames" />
+      <widget class="QComboBox" name="_projectNames" >
+       <property name="editable" >
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="_newProject" >
@@ -141,7 +145,7 @@
       <enum>QFrame::Sunken</enum>
      </property>
      <property name="currentIndex" >
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="_odbcPage" >
       <layout class="QVBoxLayout" name="verticalLayout_2" >

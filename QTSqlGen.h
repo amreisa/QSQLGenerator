@@ -42,6 +42,8 @@ public:
     ~QTSqlGen();
 
 private slots:
+	void on__deleteProject_clicked();
+	void on__newProject_clicked();
 
 	void on__databaseType_currentIndexChanged(int index);
 	void on__aboutButton_clicked(void);
@@ -85,6 +87,8 @@ private:
 	void LoadODBCViews(void);
     void LoadODBCViewColumns(void);
 	
+	void PopulateProjects(void);
+
 	void LoadProjects(void);
 	void SaveProjects(void);
 	void SetCurrentProject(SqlProject* sqlProject);

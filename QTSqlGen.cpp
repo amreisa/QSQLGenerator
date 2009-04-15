@@ -53,6 +53,8 @@ QTSqlGen::QTSqlGen
 
 	LoadProjects();
 
+	PopulateProjects();
+
 	QStringList paths = QCoreApplication::libraryPaths();
 
 	AppendOutput("Paths:");
@@ -63,7 +65,7 @@ QTSqlGen::QTSqlGen
 
 QTSqlGen::~QTSqlGen()
 {
-
+	SaveProjects();
 }
 
 void QTSqlGen::on__replaceProject_stateChanged
@@ -1790,6 +1792,21 @@ void QTSqlGen::on__databaseType_currentIndexChanged
 	}
 }
 
+void QTSqlGen::PopulateProjects()
+{
+	QStringList projects = SqlProject::GetProjectNames(_projects);
+
+	_projectNames->clear();
+
+	QList<QString>::iterator project = projects.begin();
+	while (project != projects.end())
+	{
+		_projectNames->addItem(*project);
+
+		project++;
+	}
+}
+
 const QString kProjects("Projects");
 const QString kProjectName("ProjectName");
 const QString kDatabasePath("DatabasePath");
@@ -1848,36 +1865,48 @@ void QTSqlGen::LoadProjects()
 
 	settings.endGroup();
 
-/*	QString lastPath = settings.value(kLastDBPath).toString();
-	if (lastPath.size())
+	if (_projects.size() == 0)
 	{
-		if (QFile::exists(lastPath))
-		{
-			_dbPath->setText(lastPath);
+		SqlProject* sqlProject = new SqlProject;
 
-			SetProductName(lastPath);
+		sqlProject->_projectName = "<Untitled>";
 
-			settings.beginGroup(kTargetPaths);
-			QString regPath = _dbPath->text();
-				
-			regPath.replace("/", ".");
+		_projects.push_back(sqlProject);
 
-			QString lastTarget = settings.value(regPath).toString();
-			settings.endGroup();
-
-			if (lastTarget.size())
-				_targetPath->setText(lastTarget);
-
-		}
-		else
-			AppendOutput("Saved database source not found.");
+		SetCurrentProject(sqlProject);
 	}
-
-*/
 }
 
 void QTSqlGen::SaveProjects()
 {
+	QSettings settings;
+	QString groupKey;
+	int i(1);
+
+	settings.beginGroup(kProjects);
+
+	settings.remove("");
+
+	SqlProjectIter iter = _projects.begin();
+	while (iter != _projects.end())
+	{
+		groupKey = QString("Project{1}").arg(i);
+
+		settings.beginGroup(groupKey);
+
+		settings.setValue(kProjectName, (*iter)->_projectName);
+		settings.setValue(kTargetPath, (*iter)->_targetPath);
+		settings.setValue(kTargetPath, QVariant((int) ((*iter)->_sourceType)));
+		settings.setValue(kDynamic, (*iter)->_dynamicLibrary);
+		settings.setValue(kWriteProject, (*iter)->_writeProject);
+		settings.setValue(kDatabasePath, (*iter)->_databasePath);
+		settings.setValue(kDatabasePath, QVariant((int) ((*iter)->_odbcDriver)));
+
+		settings.endGroup();
+		iter++; i++;
+	}
+
+	settings.endGroup();
 }
 
 void QTSqlGen::SetCurrentProject
@@ -1913,7 +1942,7 @@ void QTSqlGen::SetCurrentProject
 		}
 
 		_targetPath->setText(_currentProject->_targetPath);
-		_locatePath->setText(_currentProject->_databasePath);
+		_dbPath->setText(_currentProject->_databasePath);
 		_connectionString->setText(_currentProject->_databasePath);
 		_replaceProject->setChecked(_currentProject->_writeProject);
 		_dynamicRadio->setChecked(_currentProject->_dynamicLibrary);
@@ -1941,3 +1970,15 @@ void InitializeMap()
 	gDataMap["bool"] = Column::eBoolean;
 	gDataMap["boolean"] = Column::eBoolean;
 };
+
+void QTSqlGen::on__newProject_clicked()
+{
+	SqlProject* sqlProject = new SqlProject;
+
+	SetCurrentProject(sqlProject);
+}
+
+void QTSqlGen::on__deleteProject_clicked()
+{
+
+}

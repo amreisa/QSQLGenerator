@@ -2,7 +2,8 @@
 
 SqlProject::SqlProject() :
 	_dynamicLibrary(true),
-	_sourceType(eUnknown),
+	_sourceType(eSqlite),
+	_writeProject(false),
 	_dirty(false)
 {
 }
@@ -49,7 +50,7 @@ SqlProject* SqlProject::FindProject
 	return result;
 }
 
-QStringList GetProjectNames
+QStringList SqlProject::GetProjectNames
 (
 	SqlProjects& projects
 )
