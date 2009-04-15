@@ -1982,3 +1982,39 @@ void QTSqlGen::on__deleteProject_clicked()
 {
 
 }
+
+void QTSqlGen::on__projectNames_textChanged
+(
+	const QString& newText
+)
+{
+	if (_currentProject != NULL && newText != _currentProject->_projectName)
+	{
+		_currentProject->_projectName = newText;
+		_currentProject->_dirty = true;
+	}
+}
+
+void QTSqlGen::on__projectNames_currentIndexChanged
+(
+	int index
+)
+{
+	QString projectString = _projectNames->itemText(index);
+	SqlProject* newProject = SqlProject::FindProject(projectString, _projects);
+
+	if (newProject != _currentProject)
+		SetCurrentProject(newProject);
+}
+
+void QTSqlGen::on__connectionString_textChanged
+(
+	const QString& newText
+)
+{
+	if (_currentProject != NULL && newText != _currentProject->_databasePath)
+	{
+		_currentProject->_databasePath = newText;
+		_currentProject->_dirty = true;
+	}
+}

@@ -42,6 +42,9 @@ public:
     ~QTSqlGen();
 
 private slots:
+	void on__connectionString_textChanged(const QString &);
+	void on__projectNames_currentIndexChanged(int);
+	void on__projectNames_textChanged(const QString &);
 	void on__deleteProject_clicked();
 	void on__newProject_clicked();
 
