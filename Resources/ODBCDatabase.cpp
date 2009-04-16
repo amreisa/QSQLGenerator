@@ -79,7 +79,7 @@ void <%productName%>Database::SetODBCDriver(ODBCDrivers odbcDriver)
 
 	case eMySql:
 		_driverString = gConnectionStrings[4];
-		_port = 3306;
+		_port = "3306";
 		break;
 
 	case eOracle:
@@ -88,7 +88,7 @@ void <%productName%>Database::SetODBCDriver(ODBCDrivers odbcDriver)
 
 	case ePostgres:
 		_driverString = gConnectionStrings[6];
-		_port = 5432;  // default port
+		_port = "5432";  // default port
 		break;
 	}
 
@@ -147,7 +147,7 @@ void <%productName%>Database::CreateConnection
 	if (_connectionString.length() == 0)
 		BuildConnectionString();
 
-	db.setDatabaseName(_connectionString);
+	_database.setDatabaseName(_connectionString);
 }
 
 void <%productName%>Database::BuildConnectionString()

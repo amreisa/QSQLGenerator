@@ -504,7 +504,16 @@ void QTSqlGen::LoadODBCColumns()
 				case QVariant::Time: column._type = Column::eTime; break;
 				case QVariant::Double: column._type = Column::eReal; break;
 				case QVariant::Bool: column._type = Column::eBoolean; break;
-				default: column._type = Column::eUnknown; break;
+				default: 
+					column._type = Column::eUnknown; 
+
+					QString message = "Unhandled Type:";
+					message += QString(QVariant::typeToName(sqlField.type()));
+					message += " In Column:" + column._name;
+					message += " In Table:" + (*iter)._name;
+
+					AppendOutput(message);
+					break;
 				}
 
 				(*iter)._columns.push_back(column);
