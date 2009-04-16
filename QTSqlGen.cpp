@@ -158,6 +158,8 @@ void QTSqlGen::on__genDal_clicked()
 		return;
 	}
 
+	SetProductName(_currentProject->_projectName);
+
 	if (_targetPath->text().size() == 0)
 		return;
 
@@ -1291,7 +1293,7 @@ void QTSqlGen::WriteStaticFiles()
 	staticFiles << ":/templates/Resources/RecordBase.h" 
 		<< ":/templates/Resources/RecordBase.cpp";
 
-	if (_replaceProject->isChecked())
+	if (_currentProject->_writeProject == true)
 		staticFiles	<< ":/templates/Resources/CreateVCProj.bat";
 
 	staticFile = staticFiles.begin();
@@ -1379,39 +1381,42 @@ void QTSqlGen::WriteHeaderFile()
 
 void QTSqlGen::WriteExportHeaderFile()
 {
-	QFile templateFile;
-	QFile srcFile;
-
-	templateFile.setFileName(":/templates/Resources/Header2");
-
-	if (templateFile.open(QIODevice::ReadOnly))
+	if (_currentProject->_dynamicLibrary == true)
 	{
-		QByteArray templateStr = templateFile.readAll();
+		QFile templateFile;
+		QFile srcFile;
 
-		QString srcFilePath = _targetPath->text() + "/" + _productInclude;
+		templateFile.setFileName(":/templates/Resources/Header2");
 
-		srcFile.setFileName(srcFilePath);
-		if (srcFile.open(QIODevice::WriteOnly))
+		if (templateFile.open(QIODevice::ReadOnly))
 		{
-			StandardReplacements(templateStr);
+			QByteArray templateStr = templateFile.readAll();
 
-			srcFile.write(templateStr);
+			QString srcFilePath = _targetPath->text() + "/" + _productInclude;
 
-			AppendOutput(srcFilePath + " written");
-			srcFile.close();
+			srcFile.setFileName(srcFilePath);
+			if (srcFile.open(QIODevice::WriteOnly))
+			{
+				StandardReplacements(templateStr);
 
-			AddHeaderFile(_productInclude);
+				srcFile.write(templateStr);
+
+				AppendOutput(srcFilePath + " written");
+				srcFile.close();
+
+				AddHeaderFile(_productInclude);
+			}
+			else
+			{
+				AppendOutput("Error opening: " + srcFilePath);
+			}
 		}
 		else
 		{
-			AppendOutput("Error opening: " + srcFilePath);
+			QFile::FileError fileError = templateFile.error();
+			
+			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 		}
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 	}
 }
 
@@ -1433,10 +1438,10 @@ void QTSqlGen::WriteProject()
 			StandardReplacements(templateStr);
 
 			templateStr.replace(QByteArray("<%linkage%>"), 
-				_dynamicRadio->isChecked() ? "dll" : "staticlib" );
+				_currentProject->_dynamicLibrary ? "dll" : "staticlib" );
 
 			templateStr.replace(QByteArray("<%linkagedef%>"), 
-				_dynamicRadio->isChecked() ? "BASE_DLL" : "BASE_STATIC" );
+				_currentProject->_dynamicLibrary ? QByteArray("BASE_DLL ") + _dllExportDefine.toAscii() : "BASE_STATIC" );
 
 			srcFile.write(templateStr);
 
@@ -1740,7 +1745,7 @@ void QTSqlGen::WriteDatabaseFiles()
 
 	if (_currentProject->_sourceType == eODBC)
 	{
-		templateFile.setFileName(":/templates/Resources/ODBCDatabase.h");
+		templateFile.setFileName(":/templates/Resources/ODBCDrivers.h");
 	
 		if (templateFile.open(QIODevice::ReadOnly))
 		{
@@ -1912,7 +1917,7 @@ void QTSqlGen::SaveProjects()
 
 		settings.setValue(kProjectName, (*iter)->_projectName);
 		settings.setValue(kTargetPath, (*iter)->_targetPath);
-		settings.setValue(kTargetPath, QVariant((int) ((*iter)->_sourceType)));
+		settings.setValue(kSourceType, QVariant((int) ((*iter)->_sourceType)));
 		settings.setValue(kDynamic, (*iter)->_dynamicLibrary);
 		settings.setValue(kWriteProject, (*iter)->_writeProject);
 		settings.setValue(kDatabasePath, (*iter)->_databasePath);
@@ -1963,8 +1968,7 @@ void QTSqlGen::SetCurrentProject
 		_replaceProject->setChecked(_currentProject->_writeProject);
 		_dynamicRadio->setChecked(_currentProject->_dynamicLibrary);
 		_staticRadio->setChecked(_currentProject->_dynamicLibrary == false);
-
-		SetProductName(_currentProject->_projectName);
+		_schemaSource->setCurrentIndex((int) (_currentProject->_odbcDriver));
 	}
 }
 

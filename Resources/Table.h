@@ -31,6 +31,8 @@
 #include "<%table%>Record.h"
 #include "<%table%>SelectionCriteria.h"
 
+#include "<%productInclude%>"
+
 class <%productName%>Database;
 class QSqlQuery;
 
