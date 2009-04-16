@@ -12,4 +12,16 @@ enum ODBCDrivers
 	ePostgres = 6
 };
 
+static char* DriverNames[] = 
+{
+	"Sql Server 2000",
+	"Sql Server 2005",
+	"Sql Server 2008",
+	"Microsoft Access",
+	"MySql",
+	"Oracle",
+	"Postgres",
+	NULL
+};
+
 #endif

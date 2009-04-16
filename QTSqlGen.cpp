@@ -51,6 +51,8 @@ QTSqlGen::QTSqlGen
 
 	setupUi(this);
 
+	PopulateDrivers();
+
 	LoadProjects();
 
 	PopulateProjects();
@@ -87,7 +89,7 @@ void QTSqlGen::on__replaceProject_stateChanged
 		break;
 	}
 
-	if (_currentProject != NULL)
+	if (_currentProject != NULL && _currentProject->_writeProject != newState)
 	{
 		_currentProject->_writeProject = newState;
 		_currentProject->_dirty = true;
@@ -136,12 +138,8 @@ void QTSqlGen::on__locateTarget_clicked()
 		QString s = QFileDialog::getExistingDirectory(this, "Select the target directory for the source files.", 
 			QDir::homePath());
 
-		if (s.size() > 0)
+		if (s.size() > 0 && s != _currentProject->_targetPath)
 		{
-			QString regPath = _dbPath->text();
-
-			regPath.replace("/", ".");
-
 			_targetPath->setText(s);	
 			_currentProject->_targetPath = s;
 			_currentProject->_dirty = true;
@@ -154,6 +152,12 @@ void QTSqlGen::on__genDal_clicked()
 	if (_currentProject == NULL)
 		return;
 
+	if (_currentProject->_projectName.size() == 0 || _currentProject->_projectName == "<Untitled>")
+	{
+		AppendOutput("Supply a Product Name");
+		return;
+	}
+
 	if (_targetPath->text().size() == 0)
 		return;
 
@@ -161,8 +165,6 @@ void QTSqlGen::on__genDal_clicked()
 	{
 	case eODBC:
 		_db = QSqlDatabase::addDatabase("QODBC");
-//		if (lineEdit_productName->text().size() == 0)
-//			AppendOutput("Supply a Product Name");
 		break;
 
 	case eSqlite:	
@@ -448,24 +450,25 @@ void QTSqlGen::LoadODBCColumns()
 {	
 	QString tableQuery;
 
-	switch (_schemaSource->currentIndex())
+
+	switch (_currentProject->_odbcDriver)
 	{
-	case 0:  //sql server 2008
-	case 1:  //sql server 2005
-	case 2:	 //sql server 2000
-	case 3:  //MS Access
+	case eSqlServer2000:  //sql server 2008
+	case eSqlServer2005:  //sql server 2005
+	case eSqlServer2008:	 //sql server 2000
+	case eAccess: 
 		tableQuery = "SELECT TOP 1 * FROM <%T%>";
 		break;
 
-	case 4: // My SQL
+	case eMySql: 
 		tableQuery = "SELECT * FROM <%T%> LIMIT 1";
 		break;
 
-	case 6: // Postgres
+	case ePostgres: 
 		tableQuery = "SELECT * FROM \"<%T%>\" LIMIT 1";
 		break;
 
-	case 5: // Oracle
+	case eOracle: 
 		tableQuery = "SELECT * from <%T%> WHERE ROWNUM <= 1";
 		break;
 	}
@@ -1792,6 +1795,19 @@ void QTSqlGen::on__databaseType_currentIndexChanged
 	}
 }
 
+void QTSqlGen::PopulateDrivers()
+{
+	int i = 0;
+
+	_schemaSource->clear();
+
+	while (DriverNames[i] != NULL)
+	{
+		_schemaSource->addItem(QString(DriverNames[i]));
+		i++;
+	}
+}
+
 void QTSqlGen::PopulateProjects()
 {
 	QStringList projects = SqlProject::GetProjectNames(_projects);
@@ -1890,7 +1906,7 @@ void QTSqlGen::SaveProjects()
 	SqlProjectIter iter = _projects.begin();
 	while (iter != _projects.end())
 	{
-		groupKey = QString("Project{1}").arg(i);
+		groupKey = QString("Project%1").arg(i);
 
 		settings.beginGroup(groupKey);
 
@@ -1900,7 +1916,7 @@ void QTSqlGen::SaveProjects()
 		settings.setValue(kDynamic, (*iter)->_dynamicLibrary);
 		settings.setValue(kWriteProject, (*iter)->_writeProject);
 		settings.setValue(kDatabasePath, (*iter)->_databasePath);
-		settings.setValue(kDatabasePath, QVariant((int) ((*iter)->_odbcDriver)));
+		settings.setValue(kODBCDriver, QVariant((int) ((*iter)->_odbcDriver)));
 
 		settings.endGroup();
 		iter++; i++;
@@ -1948,6 +1964,7 @@ void QTSqlGen::SetCurrentProject
 		_dynamicRadio->setChecked(_currentProject->_dynamicLibrary);
 		_staticRadio->setChecked(_currentProject->_dynamicLibrary == false);
 
+		SetProductName(_currentProject->_projectName);
 	}
 }
 
@@ -2015,6 +2032,18 @@ void QTSqlGen::on__connectionString_textChanged
 	if (_currentProject != NULL && newText != _currentProject->_databasePath)
 	{
 		_currentProject->_databasePath = newText;
+		_currentProject->_dirty = true;
+	}
+}
+
+void QTSqlGen::on__schemaSource_currentIndexChanged
+(
+	int index
+)
+{
+	if (_currentProject != NULL && index != _currentProject->_odbcDriver)
+	{
+		_currentProject->_odbcDriver = (ODBCDrivers) index;
 		_currentProject->_dirty = true;
 	}
 }

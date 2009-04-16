@@ -42,6 +42,7 @@ public:
     ~QTSqlGen();
 
 private slots:
+	void on__schemaSource_currentIndexChanged(int);
 	void on__connectionString_textChanged(const QString &);
 	void on__projectNames_currentIndexChanged(int);
 	void on__projectNames_textChanged(const QString &);
@@ -90,6 +91,7 @@ private:
 	void LoadODBCViews(void);
     void LoadODBCViewColumns(void);
 	
+	void PopulateDrivers(void);
 	void PopulateProjects(void);
 
 	void LoadProjects(void);
