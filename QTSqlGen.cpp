@@ -1,6 +1,6 @@
 //The MIT License
 //
-//Copyright (c) 2008 Michael Simpson
+//Copyright (c) 2006-2010 Michael Simpson
 //
 //Permission is hereby granted, free of charge, to any person obtaining a copy
 //of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMap>
+#include <QMessageBox>
 #include <QUuid>
 #include <QSettings>
 #include <QSqlError>
@@ -44,8 +45,7 @@ QTSqlGen::QTSqlGen
 ) : 
 	QDialog(parent, flags),
 	_projectGUID(QUuid::createUuid().toString().toUpper()),
-	_now(QDate::currentDate()),
-	_currentProject(NULL)
+	_now(QDate::currentDate())
 {
 	InitializeMap();
 
@@ -54,8 +54,6 @@ QTSqlGen::QTSqlGen
 	PopulateDrivers();
 
 	LoadProjects();
-
-	PopulateProjects();
 
 	QStringList paths = QCoreApplication::libraryPaths();
 
@@ -68,32 +66,6 @@ QTSqlGen::QTSqlGen
 QTSqlGen::~QTSqlGen()
 {
 	SaveProjects();
-}
-
-void QTSqlGen::on__replaceProject_stateChanged
-(
-	int state
-)
-{
-	bool newState = false;
-
-	switch (state)
-	{
-	case Qt::Unchecked:
-	case Qt::PartiallyChecked:
-		newState = false;
-		break;
-
-	case Qt::Checked:
-		newState = true;
-		break;
-	}
-
-	if (_currentProject != NULL && _currentProject->_writeProject != newState)
-	{
-		_currentProject->_writeProject = newState;
-		_currentProject->_dirty = true;
-	}
 }
 
 void QTSqlGen::SetProductName
@@ -120,50 +92,57 @@ void QTSqlGen::SetProductName
 
  void QTSqlGen::on__locatePath_clicked()
  {
-    QString s = QFileDialog::getOpenFileName(this,
-		"Select a SQLite File", QDir::homePath(), "SQLite (*.dat *.db *.sdb *s3db)");
-	if (_currentProject != NULL && s.size() > 0)
-	{
-		_dbPath->setText(s);	
+	SqlProject* currentProject = GetProject();
 
-		_currentProject->_databasePath = s;
-		_currentProject->_dirty = true;
+	if (currentProject != NULL)
+	{
+		QString s = QFileDialog::getOpenFileName(this, "Select a SQLite File", 
+			QDir::homePath(), "SQLite (*.dat *.db *.sdb *s3db)");
+		if (s.size() > 0)
+		{
+			_dbPath->setText(s);	
+
+			currentProject->_databasePath = s;
+		}
 	}
  }
 
 void QTSqlGen::on__locateTarget_clicked()
-{    
-	if (_currentProject != NULL)
+{    	
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
 	{
 		QString s = QFileDialog::getExistingDirectory(this, "Select the target directory for the source files.", 
 			QDir::homePath());
 
-		if (s.size() > 0 && s != _currentProject->_targetPath)
+		if (s.size() > 0)
 		{
 			_targetPath->setText(s);	
-			_currentProject->_targetPath = s;
-			_currentProject->_dirty = true;
+			currentProject->_targetPath = s;
 		}
 	}
 }
 
 void QTSqlGen::on__genDal_clicked()
 {
-	if (_currentProject == NULL)
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject == NULL)
 		return;
 
-	if (_currentProject->_projectName.size() == 0 || _currentProject->_projectName == "<Untitled>")
+	if (currentProject->_projectName.size() == 0 || currentProject->_projectName == "<Untitled>")
 	{
 		AppendOutput("Supply a Product Name");
 		return;
 	}
 
-	SetProductName(_currentProject->_projectName);
+	SetProductName(currentProject->_projectName);
 
 	if (_targetPath->text().size() == 0)
 		return;
 
-	switch (_currentProject->_sourceType)
+	switch (currentProject->_sourceType)
 	{
 	case eODBC:
 		_db = QSqlDatabase::addDatabase("QODBC");
@@ -192,11 +171,10 @@ void QTSqlGen::on__genDal_clicked()
 		return;
 	}
 
-	switch (_currentProject->_sourceType)
+	switch (currentProject->_sourceType)
 	{
 	case eODBC:
 		_db.setDatabaseName(_connectionString->text());
-//		SetProductName(lineEdit_productName->text());
 		break;
 
 	case eSqlite:
@@ -212,7 +190,7 @@ void QTSqlGen::on__genDal_clicked()
 		_sources.clear();
 		_headers.clear();
 
-		switch (_currentProject->_sourceType)
+		switch (currentProject->_sourceType)
 		{
 		case eODBC:
 			LoadODBCTables();
@@ -227,7 +205,7 @@ void QTSqlGen::on__genDal_clicked()
 
         GenCode(_tables, "Table");
 
-		switch (_currentProject->_sourceType)
+		switch (currentProject->_sourceType)
 		{
 		case eODBC:
 			LoadODBCViews();
@@ -452,82 +430,85 @@ void QTSqlGen::LoadODBCColumns()
 {	
 	QString tableQuery;
 
-
-	switch (_currentProject->_odbcDriver)
+	SqlProject* currentProject = GetProject();
+	if (currentProject != NULL)
 	{
-	case eSqlServer2000:  //sql server 2008
-	case eSqlServer2005:  //sql server 2005
-	case eSqlServer2008:	 //sql server 2000
-	case eAccess: 
-		tableQuery = "SELECT TOP 1 * FROM <%T%>";
-		break;
+		switch (currentProject->_odbcDriver)
+		{
+		case eSqlServer2000:  //sql server 2008
+		case eSqlServer2005:  //sql server 2005
+		case eSqlServer2008:	 //sql server 2000
+		case eAccess: 
+			tableQuery = "SELECT TOP 1 * FROM <%T%>";
+			break;
 
-	case eMySql: 
-		tableQuery = "SELECT * FROM <%T%> LIMIT 1";
-		break;
+		case eMySql: 
+			tableQuery = "SELECT * FROM <%T%> LIMIT 1";
+			break;
 
-	case ePostgres: 
-		tableQuery = "SELECT * FROM \"<%T%>\" LIMIT 1";
-		break;
+		case ePostgres: 
+			tableQuery = "SELECT * FROM \"<%T%>\" LIMIT 1";
+			break;
 
-	case eOracle: 
-		tableQuery = "SELECT * from <%T%> WHERE ROWNUM <= 1";
-		break;
-	}
+		case eOracle: 
+			tableQuery = "SELECT * from <%T%> WHERE ROWNUM <= 1";
+			break;
+		}
 
-	TableIter iter = _tables.begin();
-	while (iter != _tables.end())
-	{
-		QString selectStatement = tableQuery;
-		selectStatement.replace("<%T%>", (*iter)._name);
+		TableIter iter = _tables.begin();
+		while (iter != _tables.end())
+		{
+			QString selectStatement = tableQuery;
+			selectStatement.replace("<%T%>", (*iter)._name);
 
-		QSqlQuery query(_db);
+			QSqlQuery query(_db);
 
-		if (query.exec(selectStatement)) 
-		{    
-			QSqlRecord rec = query.record();
+			if (query.exec(selectStatement)) 
+			{    
+				QSqlRecord rec = query.record();
 
-			for (int i = 0; i < rec.count(); i++)
-			{
-				Column column;
-				QSqlField sqlField = rec.field(i);
-
-				column._name = sqlField.name();
-
-				switch (sqlField.type())
+				for (int i = 0; i < rec.count(); i++)
 				{
-				case QVariant::Int: column._type = Column::eInt; break;
-				case QVariant::String: column._type = Column::eText; break;
-				case QVariant::UInt: column._type = Column::eUInt; break;
-				case QVariant::DateTime: column._type = Column::eDateTime; break;
-				case QVariant::Date: column._type = Column::eDate; break;
-				case QVariant::Time: column._type = Column::eTime; break;
-				case QVariant::Double: column._type = Column::eReal; break;
-				case QVariant::Bool: column._type = Column::eBoolean; break;
-				default: 
-					column._type = Column::eUnknown; 
+					Column column;
+					QSqlField sqlField = rec.field(i);
 
-					QString message = "Unhandled Type:";
-					message += QString(QVariant::typeToName(sqlField.type()));
-					message += " In Column:" + column._name;
-					message += " In Table:" + (*iter)._name;
+					column._name = sqlField.name();
 
-					AppendOutput(message);
-					break;
+					switch (sqlField.type())
+					{
+					case QVariant::Int: column._type = Column::eInt; break;
+					case QVariant::String: column._type = Column::eText; break;
+					case QVariant::UInt: column._type = Column::eUInt; break;
+					case QVariant::DateTime: column._type = Column::eDateTime; break;
+					case QVariant::Date: column._type = Column::eDate; break;
+					case QVariant::Time: column._type = Column::eTime; break;
+					case QVariant::Double: column._type = Column::eReal; break;
+					case QVariant::Bool: column._type = Column::eBoolean; break;
+					default: 
+						column._type = Column::eUnknown; 
+
+						QString message = "Unhandled Type:";
+						message += QString(QVariant::typeToName(sqlField.type()));
+						message += " In Column:" + column._name;
+						message += " In Table:" + (*iter)._name;
+
+						AppendOutput(message);
+						break;
+					}
+
+					(*iter)._columns.push_back(column);
 				}
-
-				(*iter)._columns.push_back(column);
 			}
-		}
-		else
-		{		
-			QSqlError se = query.lastError();
+			else
+			{		
+				QSqlError se = query.lastError();
 
-			AppendOutput("Exec Failed");
-			AppendOutput(se.text());
-		}
+				AppendOutput("Exec Failed");
+				AppendOutput(se.text());
+			}
 
-		iter++;
+			iter++;
+		}
 	}
 }
 
@@ -1296,59 +1277,65 @@ QString QTSqlGen::GenerateTableRoutine
 
 void QTSqlGen::WriteStaticFiles()
 {
-	QStringList staticFiles;
-	QStringList::iterator staticFile;
+	SqlProject* currentProject = GetProject();
 
-	staticFiles << ":/templates/Resources/RecordBase.h" 
-		<< ":/templates/Resources/RecordBase.cpp";
+	if (currentProject != NULL)
+	{
 
-	if (_currentProject->_writeProject == true)
-		staticFiles	<< ":/templates/Resources/CreateVCProj.bat";
+		QStringList staticFiles;
+		QStringList::iterator staticFile;
 
-	staticFile = staticFiles.begin();
-	while (staticFile != staticFiles.end())
-	{	
-		QFile templateFile;
+		staticFiles << ":/templates/Resources/RecordBase.h" 
+			<< ":/templates/Resources/RecordBase.cpp";
 
-		templateFile.setFileName(*staticFile);
-		if (templateFile.open(QIODevice::ReadOnly))
-		{
-			QByteArray templateStr = templateFile.readAll();
+		if (currentProject->_writeProject == true)
+			staticFiles	<< ":/templates/Resources/CreateVCProj.bat";
 
-			QStringList parts = (*staticFile).split("/", QString::SkipEmptyParts);
+		staticFile = staticFiles.begin();
+		while (staticFile != staticFiles.end())
+		{	
+			QFile templateFile;
 
-			QString srcFilePath = _targetPath->text() + "/" + parts.last();
-			QFile srcFile;
-
-			srcFile.setFileName(srcFilePath);
-			if (srcFile.open(QIODevice::WriteOnly))
+			templateFile.setFileName(*staticFile);
+			if (templateFile.open(QIODevice::ReadOnly))
 			{
-				if (parts.last().indexOf(".h") > -1)
-					AddHeaderFile(parts.last());
-				else if (parts.last().indexOf(".cpp") > -1)
-					AddSourceFile(parts.last());
+				QByteArray templateStr = templateFile.readAll();
 
-				StandardReplacements(templateStr);
+				QStringList parts = (*staticFile).split("/", QString::SkipEmptyParts);
 
-				srcFile.write(templateStr);
+				QString srcFilePath = _targetPath->text() + "/" + parts.last();
+				QFile srcFile;
 
-				AppendOutput(srcFilePath + " written");
-				srcFile.close();
+				srcFile.setFileName(srcFilePath);
+				if (srcFile.open(QIODevice::WriteOnly))
+				{
+					if (parts.last().indexOf(".h") > -1)
+						AddHeaderFile(parts.last());
+					else if (parts.last().indexOf(".cpp") > -1)
+						AddSourceFile(parts.last());
+
+					StandardReplacements(templateStr);
+
+					srcFile.write(templateStr);
+
+					AppendOutput(srcFilePath + " written");
+					srcFile.close();
+				}
+				else
+				{
+					AppendOutput("Error opening: " + srcFilePath);
+				}
+
+				templateFile.close();
 			}
 			else
 			{
-				AppendOutput("Error opening: " + srcFilePath);
+				QFile::FileError fileError = templateFile.error();
+				
+				AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 			}
-
-			templateFile.close();
+			staticFile++;
 		}
-		else
-		{
-			QFile::FileError fileError = templateFile.error();
-			
-			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-		}
-		staticFile++;
 	}
 }
 
@@ -1390,7 +1377,9 @@ void QTSqlGen::WriteHeaderFile()
 
 void QTSqlGen::WriteExportHeaderFile()
 {
-	if (_currentProject->_dynamicLibrary == true)
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL && currentProject->_dynamicLibrary == true)
 	{
 		QFile templateFile;
 		QFile srcFile;
@@ -1434,39 +1423,44 @@ void QTSqlGen::WriteProject()
 	QFile templateFile;
 	QFile srcFile;
 
-	templateFile.setFileName(":/templates/Resources/pro");
-	if (templateFile.open(QIODevice::ReadOnly))
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
 	{
-		QByteArray templateStr = templateFile.readAll();
-
-		QString srcFilePath = _targetPath->text() + "/" + _productName + "DB.pro";
-
-		srcFile.setFileName(srcFilePath);
-		if (srcFile.open(QIODevice::WriteOnly))
+		templateFile.setFileName(":/templates/Resources/pro");
+		if (templateFile.open(QIODevice::ReadOnly))
 		{
-			StandardReplacements(templateStr);
+			QByteArray templateStr = templateFile.readAll();
 
-			templateStr.replace(QByteArray("<%linkage%>"), 
-				_currentProject->_dynamicLibrary ? "dll" : "staticlib" );
+			QString srcFilePath = _targetPath->text() + "/" + _productName + "DB.pro";
 
-			templateStr.replace(QByteArray("<%linkagedef%>"), 
-				_currentProject->_dynamicLibrary ? QByteArray("BASE_DLL ") + _dllExportDefine.toAscii() : "BASE_STATIC" );
+			srcFile.setFileName(srcFilePath);
+			if (srcFile.open(QIODevice::WriteOnly))
+			{
+				StandardReplacements(templateStr);
 
-			srcFile.write(templateStr);
+				templateStr.replace(QByteArray("<%linkage%>"), 
+					currentProject->_dynamicLibrary ? "dll" : "staticlib" );
 
-			AppendOutput(srcFilePath + " written");
-			srcFile.close();
+				templateStr.replace(QByteArray("<%linkagedef%>"), 
+					currentProject->_dynamicLibrary ? QByteArray("BASE_DLL ") + _dllExportDefine.toAscii() : "BASE_STATIC" );
+
+				srcFile.write(templateStr);
+
+				AppendOutput(srcFilePath + " written");
+				srcFile.close();
+			}
+			else
+			{
+				AppendOutput("Error opening: " + srcFilePath);
+			}
 		}
 		else
 		{
-			AppendOutput("Error opening: " + srcFilePath);
+			QFile::FileError fileError = templateFile.error();
+			
+			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 		}
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 	}
 }
 
@@ -1536,11 +1530,12 @@ void QTSqlGen::on__dynamicRadio_toggled
 (
 	bool state
 )
-{
-	if (_currentProject != NULL)
-	{
-		_currentProject->_dynamicLibrary = state;
-		_currentProject->_dirty = true;
+{	
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
+	{ 
+		currentProject->_dynamicLibrary = state;
 	}
 }
 
@@ -1549,10 +1544,11 @@ void QTSqlGen::on__staticRadio_toggled
 	bool state
 )
 {
-	if (_currentProject != NULL)
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
 	{
-		_currentProject->_dynamicLibrary = state == false;
-		_currentProject->_dirty = true;
+		currentProject->_dynamicLibrary = state == false;
 	}
 }
 
@@ -1562,216 +1558,87 @@ void QTSqlGen::WriteDatabaseFiles()
 	QStringList::iterator staticFile;
 
 	QFile templateFile;
+	SqlProject* currentProject = GetProject();
 
-	switch (_currentProject->_sourceType)
+	if (currentProject != NULL)
 	{
-	case eODBC:
-		templateFile.setFileName(":/templates/Resources/ODBCDatabase.h");
-		break;
-
-	case eSqlite:
-		templateFile.setFileName(":/templates/Resources/SqliteDatabase.h");
-		break;
-
-	default:
-		return;
-	}
-
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray templateStr = templateFile.readAll();
-
-		QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.h";
-		QFile srcFile;
-
-		srcFile.setFileName(srcFilePath);
-		if (srcFile.open(QIODevice::WriteOnly))
+		switch (currentProject->_sourceType)
 		{
-			AddHeaderFile(_productName + "Database.h");
+		case eODBC:
+			templateFile.setFileName(":/templates/Resources/ODBCDatabase.h");
+			break;
 
-			QString includes;
-			QString tables;
-			QString views;
-			QString tablePtrs;
-	
-			TableIter table = _tables.begin();
-			while (table != _tables.end())
-			{
-				QString variableName((*table)._name);
+		case eSqlite:
+			templateFile.setFileName(":/templates/Resources/SqliteDatabase.h");
+			break;
 
-				variableName[0] = QChar(variableName[0]).toLower();
-
-				includes += "#include \"" + (*table)._name + "Table.h\"\n";
-
-				tables += "\t" + (*table)._name + "Table* Get" + (*table)._name + "Table(void);\n";
-				
-				if (tablePtrs.size())
-					tablePtrs += "\n";
-
-				tablePtrs += "\t" + (*table)._name + "Table* \t_" + variableName + "Table;";
-
-				table++;
-			}	
-
-			TableIter view = _views.begin();
-			while (view != _views.end())
-			{
-				QString variableName((*view)._name);
-
-				variableName[0] = QChar(variableName[0]).toLower();
-
-				includes += "#include \"" + (*view)._name + "View.h\"\n";
-				views += "\t" + (*view)._name + "View* Get" + (*view)._name + "View(void);\n";	
-				
-				if (tablePtrs.size())
-					tablePtrs += "\n";
-				tablePtrs += "\t_" + (*view)._name + "View* \t_" + variableName + "View;";
-
-				view++;
-			}
-
-			templateStr.replace("<%tables%>", tables.toAscii());
-			templateStr.replace("<%views%>", views.toAscii());
-			templateStr.replace("<%tablePtrs%>", tablePtrs.toAscii());
-			templateStr.replace("<%includes%>", includes.toAscii());
-			StandardReplacements(templateStr);
-			
-			srcFile.write(templateStr);
-
-			AppendOutput(srcFilePath + " written");
-			srcFile.close();
-		}
-		else
-		{
-			AppendOutput("Error opening: " + srcFilePath);
+		default:
+			return;
 		}
 
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
-
-	switch (_currentProject->_sourceType)
-	{
-	case eODBC:
-		templateFile.setFileName(":/templates/Resources/ODBCDatabase.cpp");
-		break;
-
-	case eSqlite:
-		templateFile.setFileName(":/templates/Resources/SqliteDatabase.cpp");
-		break;
-
-	default:
-		return;
-	}
-
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray templateStr = templateFile.readAll();
-
-		QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.cpp";
-		QFile srcFile;
-
-		srcFile.setFileName(srcFilePath);
-		if (srcFile.open(QIODevice::WriteOnly))
-		{
-			AddSourceFile(_productName + "Database.cpp");
-
-			QString statics;
-			QString destructors;
-			QString tableRoutines;
-	
-			TableIter table = _tables.begin();
-			while (table != _tables.end())
-			{
-				QString variableName((*table)._name);
-
-				variableName[0] = QChar(variableName[0]).toLower();
-
-				if (statics.size())
-					statics += ",\n";
-				statics += "\t_" + variableName + "Table(NULL)";
-				
-				tableRoutines += GenerateTableRoutine(*table);
-
-				destructors += "\tif (_" + variableName + "Table != NULL)\n\t{\n";
-				destructors += "\t\tdelete _" + variableName + "Table;\n";
-				destructors += "\t\t_" + variableName + "Table = NULL;\n";
-				destructors += "\t}\n";
-				table++;
-			}	
-
-			TableIter view = _views.begin();
-			while (view != _views.end())
-			{
-				QString variableName((*view)._name);
-
-				variableName[0] = QChar(variableName[0]).toLower();
-
-				if (statics.size())
-					statics += ",\n";
-
-				statics += "\t_" + variableName + "View(NULL)";
-
-				tableRoutines += GenerateTableRoutine(*view);
-
-				destructors += "\tif (_" + variableName + "View != NULL)\n\t{\n";
-				destructors += "\t\tdelete _" + variableName + "View;\n";
-				destructors += "\t\t_" + variableName + "View = NULL;\n";
-				destructors += "\t}\n";
-
-				view++;
-			}
-
-			StandardReplacements(templateStr);
-
-			templateStr.replace("<%destructors%>", destructors.toAscii());
-			templateStr.replace("<%initializers%>", statics.toAscii());
-			templateStr.replace("<%tableRoutines%>", tableRoutines.toAscii());
-			
-			srcFile.write(templateStr);
-
-			AppendOutput(srcFilePath + " written");
-			srcFile.close();
-		}
-		else
-		{
-			AppendOutput("Error opening: " + srcFilePath);
-		}
-
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
-
-	if (_currentProject->_sourceType == eODBC)
-	{
-		templateFile.setFileName(":/templates/Resources/ODBCDrivers.h");
-	
 		if (templateFile.open(QIODevice::ReadOnly))
 		{
 			QByteArray templateStr = templateFile.readAll();
 
-			QString srcFilePath = _targetPath->text() + "/" + "ODBCDrivers.h";
-			QFile odbcHeaderFile;
+			QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.h";
+			QFile srcFile;
 
-			odbcHeaderFile.setFileName(srcFilePath);
-			if (odbcHeaderFile.open(QIODevice::WriteOnly))
+			srcFile.setFileName(srcFilePath);
+			if (srcFile.open(QIODevice::WriteOnly))
 			{
-				AddHeaderFile("ODBCDrivers.h");
-			
-				odbcHeaderFile.write(templateStr);
+				AddHeaderFile(_productName + "Database.h");
 
-				AppendOutput("ODBCDrivers.h written");
-				odbcHeaderFile.close();
+				QString includes;
+				QString tables;
+				QString views;
+				QString tablePtrs;
+		
+				TableIter table = _tables.begin();
+				while (table != _tables.end())
+				{
+					QString variableName((*table)._name);
+
+					variableName[0] = QChar(variableName[0]).toLower();
+
+					includes += "#include \"" + (*table)._name + "Table.h\"\n";
+
+					tables += "\t" + (*table)._name + "Table* Get" + (*table)._name + "Table(void);\n";
+					
+					if (tablePtrs.size())
+						tablePtrs += "\n";
+
+					tablePtrs += "\t" + (*table)._name + "Table* \t_" + variableName + "Table;";
+
+					table++;
+				}	
+
+				TableIter view = _views.begin();
+				while (view != _views.end())
+				{
+					QString variableName((*view)._name);
+
+					variableName[0] = QChar(variableName[0]).toLower();
+
+					includes += "#include \"" + (*view)._name + "View.h\"\n";
+					views += "\t" + (*view)._name + "View* Get" + (*view)._name + "View(void);\n";	
+					
+					if (tablePtrs.size())
+						tablePtrs += "\n";
+					tablePtrs += "\t_" + (*view)._name + "View* \t_" + variableName + "View;";
+
+					view++;
+				}
+
+				templateStr.replace("<%tables%>", tables.toAscii());
+				templateStr.replace("<%views%>", views.toAscii());
+				templateStr.replace("<%tablePtrs%>", tablePtrs.toAscii());
+				templateStr.replace("<%includes%>", includes.toAscii());
+				StandardReplacements(templateStr);
+				
+				srcFile.write(templateStr);
+
+				AppendOutput(srcFilePath + " written");
+				srcFile.close();
 			}
 			else
 			{
@@ -1786,26 +1653,139 @@ void QTSqlGen::WriteDatabaseFiles()
 			
 			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
 		}
-	}
-}
 
-void QTSqlGen::on__databaseType_currentIndexChanged
-( 
-	int index 
-)
-{
-	int source = _databaseType->currentIndex();
-	switch (source)
-	{
-	case 0:
-		_currentProject->_sourceType = eODBC;
-		_databaseStack->setCurrentIndex(0);
-		break;
+		switch (currentProject->_sourceType)
+		{
+		case eODBC:
+			templateFile.setFileName(":/templates/Resources/ODBCDatabase.cpp");
+			break;
 
-	case 1:
-		_currentProject->_sourceType = eSqlite;
-		_databaseStack->setCurrentIndex(1);
-		break;
+		case eSqlite:
+			templateFile.setFileName(":/templates/Resources/SqliteDatabase.cpp");
+			break;
+
+		default:
+			return;
+		}
+
+		if (templateFile.open(QIODevice::ReadOnly))
+		{
+			QByteArray templateStr = templateFile.readAll();
+
+			QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.cpp";
+			QFile srcFile;
+
+			srcFile.setFileName(srcFilePath);
+			if (srcFile.open(QIODevice::WriteOnly))
+			{
+				AddSourceFile(_productName + "Database.cpp");
+
+				QString statics;
+				QString destructors;
+				QString tableRoutines;
+		
+				TableIter table = _tables.begin();
+				while (table != _tables.end())
+				{
+					QString variableName((*table)._name);
+
+					variableName[0] = QChar(variableName[0]).toLower();
+
+					if (statics.size())
+						statics += ",\n";
+					statics += "\t_" + variableName + "Table(NULL)";
+					
+					tableRoutines += GenerateTableRoutine(*table);
+
+					destructors += "\tif (_" + variableName + "Table != NULL)\n\t{\n";
+					destructors += "\t\tdelete _" + variableName + "Table;\n";
+					destructors += "\t\t_" + variableName + "Table = NULL;\n";
+					destructors += "\t}\n";
+					table++;
+				}	
+
+				TableIter view = _views.begin();
+				while (view != _views.end())
+				{
+					QString variableName((*view)._name);
+
+					variableName[0] = QChar(variableName[0]).toLower();
+
+					if (statics.size())
+						statics += ",\n";
+
+					statics += "\t_" + variableName + "View(NULL)";
+
+					tableRoutines += GenerateTableRoutine(*view);
+
+					destructors += "\tif (_" + variableName + "View != NULL)\n\t{\n";
+					destructors += "\t\tdelete _" + variableName + "View;\n";
+					destructors += "\t\t_" + variableName + "View = NULL;\n";
+					destructors += "\t}\n";
+
+					view++;
+				}
+
+				StandardReplacements(templateStr);
+
+				templateStr.replace("<%destructors%>", destructors.toAscii());
+				templateStr.replace("<%initializers%>", statics.toAscii());
+				templateStr.replace("<%tableRoutines%>", tableRoutines.toAscii());
+				
+				srcFile.write(templateStr);
+
+				AppendOutput(srcFilePath + " written");
+				srcFile.close();
+			}
+			else
+			{
+				AppendOutput("Error opening: " + srcFilePath);
+			}
+
+			templateFile.close();
+		}
+		else
+		{
+			QFile::FileError fileError = templateFile.error();
+			
+			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
+		}
+
+		if (currentProject->_sourceType == eODBC)
+		{
+			templateFile.setFileName(":/templates/Resources/ODBCDrivers.h");
+		
+			if (templateFile.open(QIODevice::ReadOnly))
+			{
+				QByteArray templateStr = templateFile.readAll();
+
+				QString srcFilePath = _targetPath->text() + "/" + "ODBCDrivers.h";
+				QFile odbcHeaderFile;
+
+				odbcHeaderFile.setFileName(srcFilePath);
+				if (odbcHeaderFile.open(QIODevice::WriteOnly))
+				{
+					AddHeaderFile("ODBCDrivers.h");
+				
+					odbcHeaderFile.write(templateStr);
+
+					AppendOutput("ODBCDrivers.h written");
+					odbcHeaderFile.close();
+				}
+				else
+				{
+					AppendOutput("Error opening: " + srcFilePath);
+				}
+
+				templateFile.close();
+			}
+			else
+			{
+				QFile::FileError fileError = templateFile.error();
+				
+				AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
+			}
+		}
 	}
 }
 
@@ -1822,21 +1802,6 @@ void QTSqlGen::PopulateDrivers()
 	}
 }
 
-void QTSqlGen::PopulateProjects()
-{
-	QStringList projects = SqlProject::GetProjectNames(_projects);
-
-	_projectNames->clear();
-
-	QList<QString>::iterator project = projects.begin();
-	while (project != projects.end())
-	{
-		_projectNames->addItem(*project);
-
-		project++;
-	}
-}
-
 const QString kProjects("Projects");
 const QString kProjectName("ProjectName");
 const QString kDatabasePath("DatabasePath");
@@ -1845,11 +1810,14 @@ const QString kWriteProject("WriteProject");
 const QString kDynamic("Dynamic");
 const QString kSourceType("SourceType");
 const QString kODBCDriver("ODBCDriver");
+const QString kConnectionString("ConnectionString");
 
 void QTSqlGen::LoadProjects()
 {	
 	QSettings settings;
-	SqlProject* sqlProject(NULL);
+
+	_projectNames->blockSignals(true);
+	_projectNames->clear();
 
 	settings.beginGroup(kProjects);
 
@@ -1864,76 +1832,64 @@ void QTSqlGen::LoadProjects()
 			SqlProject* sqlProject = new SqlProject;
 
 			sqlProject->_projectName = settings.value(kProjectName).toString();
+			sqlProject->_targetPath = settings.value(kTargetPath).toString();
+			sqlProject->_sourceType = (DatabaseSourceType) settings.value(kSourceType).toInt();
+			sqlProject->_connectString = settings.value(kConnectionString).toString();
+			sqlProject->_dynamicLibrary = settings.value(kDynamic).toBool();
+			sqlProject->_writeProject = settings.value(kWriteProject).toBool();
+			sqlProject->_databasePath = settings.value(kDatabasePath).toString();
 
-			if (SqlProject::FindProject(sqlProject->_projectName, _projects) == NULL) // no duplicate project names
-			{
-				sqlProject->_targetPath = settings.value(kTargetPath).toString();
-				sqlProject->_sourceType = (DatabaseSourceType) settings.value(kSourceType).toInt();
-				sqlProject->_dynamicLibrary = settings.value(kDynamic).toBool();
-				sqlProject->_writeProject = settings.value(kWriteProject).toBool();
-				sqlProject->_databasePath = settings.value(kDatabasePath).toString();
-				sqlProject->_odbcDriver = (ODBCDrivers) settings.value(kODBCDriver, QVariant(0)).toInt();
+			int driverIndex = settings.value(kODBCDriver, QVariant(0)).toInt();
+			sqlProject->_odbcDriver = (ODBCDrivers) driverIndex;
 
-				_projects.push_back(sqlProject);
-
-				if (_currentProject == NULL)
-					SetCurrentProject(_currentProject);
-			}
-			else
-			{
-				delete sqlProject;
-			}
+			AddProject(sqlProject, _projectNames->count() == 0);
 
 			settings.endGroup();
 
 			project++;
 		}
 	}
-	else
-	{
-	}
 
 	settings.endGroup();
 
-	if (_projects.size() == 0)
-	{
-		SqlProject* sqlProject = new SqlProject;
-
-		sqlProject->_projectName = "<Untitled>";
-
-		_projects.push_back(sqlProject);
-
-		SetCurrentProject(sqlProject);
-	}
+	if (_projectNames->count() == 0)
+		on__newProject_clicked();
+	
+	_projectNames->blockSignals(false);
 }
 
 void QTSqlGen::SaveProjects()
 {
 	QSettings settings;
 	QString groupKey;
-	int i(1);
 
 	settings.beginGroup(kProjects);
 
 	settings.remove("");
 
-	SqlProjectIter iter = _projects.begin();
-	while (iter != _projects.end())
+	for (int index = 0; index < _projectNames->count(); index++)
 	{
-		groupKey = QString("Project%1").arg(i);
+		SqlProject* project = GetProject(index);
+		if (project != NULL)
+		{
+			groupKey = QString("Project%1").arg(index);
 
-		settings.beginGroup(groupKey);
+			QString projectName = _projectNames->itemText(index);
 
-		settings.setValue(kProjectName, (*iter)->_projectName);
-		settings.setValue(kTargetPath, (*iter)->_targetPath);
-		settings.setValue(kSourceType, QVariant((int) ((*iter)->_sourceType)));
-		settings.setValue(kDynamic, (*iter)->_dynamicLibrary);
-		settings.setValue(kWriteProject, (*iter)->_writeProject);
-		settings.setValue(kDatabasePath, (*iter)->_databasePath);
-		settings.setValue(kODBCDriver, QVariant((int) ((*iter)->_odbcDriver)));
+			settings.beginGroup(groupKey);
 
-		settings.endGroup();
-		iter++; i++;
+			settings.setValue(kProjectName, projectName);
+			settings.setValue(kTargetPath, project->_targetPath);
+			settings.setValue(kSourceType, QVariant((int) (project->_sourceType)));
+			settings.setValue(kDynamic, project->_dynamicLibrary);
+			settings.setValue(kWriteProject, project->_writeProject);
+			settings.setValue(kDatabasePath, project->_databasePath);
+			settings.setValue(kODBCDriver, QVariant((int) (project->_odbcDriver)));
+			settings.setValue(kConnectionString, QVariant(project->_connectString));
+
+
+			settings.endGroup();
+		}
 	}
 
 	settings.endGroup();
@@ -1941,24 +1897,14 @@ void QTSqlGen::SaveProjects()
 
 void QTSqlGen::SetCurrentProject
 (
-	SqlProject* sqlProject
+	int index
 )
 {
-	if (_currentProject != NULL && _currentProject->_dirty)
+	if (index != -1)
 	{
-		SqlProjectIter iter = qFind(_projects.begin(), _projects.end(), _currentProject);
-		if (iter != _projects.end())
-			_projects.erase(iter);
+		SqlProject* currentProject = GetProject();
 
-		_projects.push_front(_currentProject);
-		_currentProject->_dirty = false;
-	}
-
-	if (sqlProject != NULL)
-	{
-		_currentProject = sqlProject;
-
-		switch (_currentProject->_sourceType)
+		switch (currentProject->_sourceType)
 		{
 		case eODBC:
 			_databaseType->setCurrentIndex(0);
@@ -1971,13 +1917,13 @@ void QTSqlGen::SetCurrentProject
 			break;
 		}
 
-		_targetPath->setText(_currentProject->_targetPath);
-		_dbPath->setText(_currentProject->_databasePath);
-		_connectionString->setText(_currentProject->_databasePath);
-		_replaceProject->setChecked(_currentProject->_writeProject);
-		_dynamicRadio->setChecked(_currentProject->_dynamicLibrary);
-		_staticRadio->setChecked(_currentProject->_dynamicLibrary == false);
-		_schemaSource->setCurrentIndex((int) (_currentProject->_odbcDriver));
+		_targetPath->setText(currentProject->_targetPath);
+		_dbPath->setText(currentProject->_databasePath);
+		_connectionString->setText(currentProject->_connectString);
+		_replaceProject->setChecked(currentProject->_writeProject);
+		_dynamicRadio->setChecked(currentProject->_dynamicLibrary);
+		_staticRadio->setChecked(currentProject->_dynamicLibrary == false);
+		_schemaSource->setCurrentIndex((int) (currentProject->_odbcDriver));
 	}
 }
 
@@ -2001,27 +1947,36 @@ void InitializeMap()
 	gDataMap["boolean"] = Column::eBoolean;
 };
 
-void QTSqlGen::on__newProject_clicked()
-{
-	SqlProject* sqlProject = new SqlProject;
+#include "ProjectNameDialog.h"
 
-	SetCurrentProject(sqlProject);
+void QTSqlGen::on__newProject_clicked()
+{	
+	ProjectNameDialog pnd(this);
+
+	if (pnd.exec() == QDialog::Accepted && pnd._projectName->text().size() > 0)
+	{
+		SqlProject* sqlProject = new SqlProject;
+
+		sqlProject->_projectName = pnd._projectName->text();
+
+		AddProject(sqlProject, true);
+	}
 }
 
 void QTSqlGen::on__deleteProject_clicked()
 {
-
-}
-
-void QTSqlGen::on__projectNames_textChanged
-(
-	const QString& newText
-)
-{
-	if (_currentProject != NULL && newText != _currentProject->_projectName)
+	if (QMessageBox::warning(this, "Delete the Project?", 
+		"Are you sure?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 	{
-		_currentProject->_projectName = newText;
-		_currentProject->_dirty = true;
+		int index = _projectNames->currentIndex();
+		SqlProject* sqlProject = GetProject(index);
+
+		_projectNames->removeItem(index);
+
+		if (sqlProject != NULL)
+			delete sqlProject;
+
+		SetCurrentProject(_projectNames->currentIndex());
 	}
 }
 
@@ -2030,11 +1985,8 @@ void QTSqlGen::on__projectNames_currentIndexChanged
 	int index
 )
 {
-	QString projectString = _projectNames->itemText(index);
-	SqlProject* newProject = SqlProject::FindProject(projectString, _projects);
-
-	if (newProject != _currentProject)
-		SetCurrentProject(newProject);
+	if (index != -1)
+		SetCurrentProject(index);
 }
 
 void QTSqlGen::on__connectionString_textChanged
@@ -2042,10 +1994,11 @@ void QTSqlGen::on__connectionString_textChanged
 	const QString& newText
 )
 {
-	if (_currentProject != NULL && newText != _currentProject->_databasePath)
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
 	{
-		_currentProject->_databasePath = newText;
-		_currentProject->_dirty = true;
+		currentProject->_connectString = newText;
 	}
 }
 
@@ -2053,10 +2006,111 @@ void QTSqlGen::on__schemaSource_currentIndexChanged
 (
 	int index
 )
-{
-	if (_currentProject != NULL && index != _currentProject->_odbcDriver)
+{	
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
 	{
-		_currentProject->_odbcDriver = (ODBCDrivers) index;
-		_currentProject->_dirty = true;
+		currentProject->_odbcDriver = (ODBCDrivers) index;
 	}
+}
+
+void QTSqlGen::on__databaseType_currentIndexChanged
+( 
+	int index 
+)
+{
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
+	{
+		int source = _databaseType->currentIndex();
+		switch (source)
+		{
+		case 0:
+			currentProject->_sourceType = eODBC;
+			_databaseStack->setCurrentIndex(0);
+			break;
+
+		case 1:
+			currentProject->_sourceType = eSqlite;
+			_databaseStack->setCurrentIndex(1);
+			break;
+		}
+	}
+}
+
+void QTSqlGen::on__replaceProject_stateChanged
+(
+	int state
+)
+{
+	bool newState = false;
+
+	switch (state)
+	{
+	case Qt::Unchecked:
+	case Qt::PartiallyChecked:
+		newState = false;
+		break;
+
+	case Qt::Checked:
+		newState = true;
+		break;
+	}
+
+	SqlProject* currentProject = GetProject();
+
+	if (currentProject != NULL)
+		currentProject->_writeProject = newState;
+}
+
+void QTSqlGen::AddProject
+(
+	SqlProject* sqlProject,
+	bool setAsCurrentProject
+)
+{
+	if (sqlProject != NULL)
+	{
+		QVariant variant;
+
+#if QT_POINTER_SIZE == 4
+		variant.setValue((uint) sqlProject);
+#endif
+
+#if QT_POINTER_SIZE == 8
+		variant.setValue((qlonglong) sqlProject);
+#endif
+
+		_projectNames->addItem(sqlProject->_projectName, variant);
+
+		if (setAsCurrentProject)
+		{
+			SetCurrentProject(_projectNames->count() - 1);
+			_projectNames->setCurrentIndex(_projectNames->count() - 1);
+		}
+	}
+}
+
+SqlProject* QTSqlGen::GetProject
+(
+	int index
+)
+{
+	SqlProject* currentProject(NULL);
+
+	if (index == -1)
+		index = _projectNames->currentIndex();
+
+	if (index != -1)
+#if QT_POINTER_SIZE == 4
+		currentProject = (SqlProject*) _projectNames->itemData(index).toUInt();
+#endif
+
+#if QT_POINTER_SIZE == 8
+		currentProject = (SqlProject*) _projectNames->itemData(index).toULongLong();
+#endif
+
+	return currentProject;
 }

@@ -34,14 +34,17 @@
         </size>
        </property>
        <property name="text" >
-        <string>Product Name</string>
+        <string>Project Name</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QComboBox" name="_projectNames" >
-       <property name="editable" >
-        <bool>true</bool>
+       <property name="contextMenuPolicy" >
+        <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="sizeAdjustPolicy" >
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
       </widget>
      </item>

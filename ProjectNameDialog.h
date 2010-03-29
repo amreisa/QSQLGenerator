@@ -1,5 +1,5 @@
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef PROJECTNAMEDIALOG_H
+#define PROJECTNAMEDIALOG_H
 
 //The MIT License
 //
@@ -23,76 +23,17 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-#include <QList>
-#include <QString>
+#include "ui_ProjectNameDialog.h"
 
-struct Column
+class ProjectNameDialog : 
+	public QDialog, 
+	public Ui::ProjectNameDialogClass
 {
-	Column()
-	{
-		_type = eUnknown;
-	}
+    Q_OBJECT
 
-	Column(const Column& copyMe)
-	{
-		_name = copyMe._name;
-		_type = copyMe._type;
-	}
-
-	QString						_name;
-	enum Type
-	{
-		eUnknown,
-		eText,
-		eInt,
-		eUInt,
-		eReal,
-		eDate,
-		eTime,
-		eDateTime,
-		eGuid,
-		eBoolean
-	}							_type;
+public:
+    ProjectNameDialog(QWidget* parent = NULL, Qt::WFlags flags = 0);
+    ~ProjectNameDialog();
 };
 
-typedef QList<Column> Columns;
-typedef QList<Column>::const_iterator ColumnIter;
-
-struct Table
-{
-	Table()
-	{
-	}
-
-	Table(const Table& copyMe)
-	{
-		_type = copyMe._type;
-		_name = copyMe._name;
-		_createStatement = copyMe._createStatement;
-
-		_columns.clear();
-
-		ColumnIter iter = (ColumnIter) copyMe._columns.begin();
-		while (iter != copyMe._columns.end())
-		{
-			_columns.push_back((*iter));
-			iter++;
-		}
-	}
-
-	enum Type
-	{
-		eTable,
-		eView,
-		eIndex
-	}							_type;
-	QString						_name;
-	QString						_createStatement;
-	QList<Column>				_columns;
-};
-
-typedef QList<Table> Tables;
-typedef QList<Table>::iterator TableIter;
-
-
-#endif
+#endif // ABOUTDLG_H

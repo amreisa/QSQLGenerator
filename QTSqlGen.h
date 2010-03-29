@@ -45,7 +45,6 @@ private slots:
 	void on__schemaSource_currentIndexChanged(int);
 	void on__connectionString_textChanged(const QString &);
 	void on__projectNames_currentIndexChanged(int);
-	void on__projectNames_textChanged(const QString &);
 	void on__deleteProject_clicked();
 	void on__newProject_clicked();
 
@@ -92,13 +91,15 @@ private:
     void LoadODBCViewColumns(void);
 	
 	void PopulateDrivers(void);
-	void PopulateProjects(void);
 
 	void LoadProjects(void);
 	void SaveProjects(void);
-	void SetCurrentProject(SqlProject* sqlProject);
+	void SetCurrentProject(int index);
 
 	void StandardReplacements(QByteArray& replaceMe);
+
+	void AddProject(SqlProject* sqlProject, bool setAsCurrentProject = false);
+	SqlProject* GetProject(int index = -1);
 
 	QSqlDatabase				_db;
 	Tables						_tables;
@@ -113,8 +114,8 @@ private:
 	QString						_headers;
 	QString						_sources;
 	QDate						_now;
-	SqlProjects					_projects;
-	SqlProject*					_currentProject;
+	//SqlProjects					_projects;
+	//SqlProject*					_currentProject;
 };
 
 #endif // DALGEN_H

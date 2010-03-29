@@ -1,6 +1,3 @@
-#ifndef TABLE_H
-#define TABLE_H
-
 //The MIT License
 //
 //Copyright (c) 2006-2010 Michael Simpson
@@ -23,76 +20,19 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-#include <QList>
-#include <QString>
+#include "ProjectNameDialog.h"
 
-struct Column
+ProjectNameDialog::ProjectNameDialog
+(
+	QWidget* parent, 
+	Qt::WFlags flags
+) : 
+	QDialog(parent, flags)
 {
-	Column()
-	{
-		_type = eUnknown;
-	}
+	setupUi(this);
+}
 
-	Column(const Column& copyMe)
-	{
-		_name = copyMe._name;
-		_type = copyMe._type;
-	}
-
-	QString						_name;
-	enum Type
-	{
-		eUnknown,
-		eText,
-		eInt,
-		eUInt,
-		eReal,
-		eDate,
-		eTime,
-		eDateTime,
-		eGuid,
-		eBoolean
-	}							_type;
-};
-
-typedef QList<Column> Columns;
-typedef QList<Column>::const_iterator ColumnIter;
-
-struct Table
+ProjectNameDialog::~ProjectNameDialog()
 {
-	Table()
-	{
-	}
+}
 
-	Table(const Table& copyMe)
-	{
-		_type = copyMe._type;
-		_name = copyMe._name;
-		_createStatement = copyMe._createStatement;
-
-		_columns.clear();
-
-		ColumnIter iter = (ColumnIter) copyMe._columns.begin();
-		while (iter != copyMe._columns.end())
-		{
-			_columns.push_back((*iter));
-			iter++;
-		}
-	}
-
-	enum Type
-	{
-		eTable,
-		eView,
-		eIndex
-	}							_type;
-	QString						_name;
-	QString						_createStatement;
-	QList<Column>				_columns;
-};
-
-typedef QList<Table> Tables;
-typedef QList<Table>::iterator TableIter;
-
-
-#endif
