@@ -3,7 +3,7 @@
 
 //The MIT License
 //
-//Copyright (c) 2008-2009 Michael Simpson
+//Copyright (c) 2006-2010 Michael Simpson
 //
 //Permission is hereby granted, free of charge, to any person obtaining a copy
 //of this software and associated documentation files (the "Software"), to deal
@@ -101,6 +101,9 @@ private:
 	void AddProject(SqlProject* sqlProject, bool setAsCurrentProject = false);
 	SqlProject* GetProject(int index = -1);
 
+	QStringList LoadOracleTables(void);
+	QStringList LoadOracleViews(void);
+
 	QSqlDatabase				_db;
 	Tables						_tables;
 	Tables                      _views;
@@ -114,8 +117,6 @@ private:
 	QString						_headers;
 	QString						_sources;
 	QDate						_now;
-	//SqlProjects					_projects;
-	//SqlProject*					_currentProject;
 };
 
 #endif // DALGEN_H

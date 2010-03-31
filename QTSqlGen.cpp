@@ -208,8 +208,8 @@ void QTSqlGen::on__genDal_clicked()
 		switch (currentProject->_sourceType)
 		{
 		case eODBC:
-			LoadODBCViews();
-			LoadODBCViewColumns();
+			/*LoadODBCViews();
+			LoadODBCViewColumns();*/
 			break;
 
 		case eSqlite:
@@ -218,7 +218,7 @@ void QTSqlGen::on__genDal_clicked()
 			break;
 		}
 
-        GenCode(_views, "View");
+		GenCode(_views, "View");
 		
 		WriteDatabaseFiles();
 		WriteStaticFiles();
@@ -496,6 +496,13 @@ void QTSqlGen::LoadODBCColumns()
 						break;
 					}
 
+					QString message = "Type:";
+					message += QString(QVariant::typeToName(sqlField.type()));
+					message += " In Column:" + column._name;
+					message += " In Table:" + (*iter)._name;
+
+					AppendOutput(message);
+
 					(*iter)._columns.push_back(column);
 				}
 			}
@@ -514,21 +521,37 @@ void QTSqlGen::LoadODBCColumns()
 
 void QTSqlGen::LoadODBCTables()
 {
+	QStringList tables;
+	SqlProject* sqlProject = GetProject();
+	
 	_tables.clear();
 	_indexes.clear();
 
-	QStringList tables = _db.tables(QSql::Tables);
-	QStringList::const_iterator tableIter = tables.begin();
-    while (tableIter != tables.constEnd())
+	if (sqlProject != NULL)
 	{
-		Table table;
+		switch (sqlProject->_odbcDriver)
+		{
+		case eOracle: // QT returns too much, use an explicit query
+			tables = LoadOracleTables();
+			break;
 
-		table._type = table.eTable;
-		table._name = *tableIter;
+		default: // just use QTs default
+			tables = _db.tables(QSql::Tables);
+			break;
+		}
 
-		_tables.push_back(table);
+		QStringList::const_iterator tableIter = tables.begin();
+		while (tableIter != tables.constEnd())
+		{
+			Table table;
 
-		tableIter++;
+			table._type = table.eTable;
+			table._name = *tableIter;
+
+			_tables.push_back(table);
+
+			tableIter++;
+		}
 	}
 
 	AppendOutput("Tables:");
@@ -541,22 +564,57 @@ void QTSqlGen::LoadODBCTables()
 	}
 }
 
+QStringList QTSqlGen::LoadOracleTables()
+{
+	QStringList result;
+
+	if (_db.isOpen())
+	{
+		QSqlQuery query("select * from user_objects where OBJECT_TYPE = 'TABLE'", _db);
+		int fieldNo = query.record().indexOf("OBJECT_NAME");
+		while (query.next()) 
+		{
+			QString tableName = query.value(fieldNo).toString();
+			result.push_back(tableName);
+		}
+	}
+
+	return result;
+}
+
 void QTSqlGen::LoadODBCViews()
 {	
 	_views.clear();
 
-	QStringList views = _db.tables(QSql::Views);
-	QStringList::const_iterator viewIter = views.begin();
-    while (viewIter != views.constEnd())
+	QStringList views;
+	
+	SqlProject* sqlProject = GetProject();
+
+	if (sqlProject != NULL)
 	{
-		Table aView;
+		switch (sqlProject->_odbcDriver)
+		{
+		case eOracle: // QT returns too much, use an explicit query
+			views = LoadOracleViews();
+			break;
 
-		aView._type = Table::eView;
-		aView._name = *viewIter;
+		default: // just use QTs default
+			views = _db.tables(QSql::Views);
+			break;
+		}
 
-		_views.push_back(aView);
+		QStringList::const_iterator viewIter = views.begin();
+		while (viewIter != views.constEnd())
+		{
+			Table aView;
 
-		viewIter++;
+			aView._type = Table::eView;
+			aView._name = *viewIter;
+
+			_views.push_back(aView);
+
+			viewIter++;
+		}
 	}
 
 	AppendOutput("Views:");
@@ -566,6 +624,24 @@ void QTSqlGen::LoadODBCViews()
 		AppendOutput("   " +  (*iter)._name);
 		iter++;
 	}
+}
+
+QStringList QTSqlGen::LoadOracleViews()
+{
+	QStringList result;
+
+	if (_db.isOpen())
+	{
+		QSqlQuery query("select * from user_objects where OBJECT_TYPE = 'VIEW'", _db);
+		int fieldNo = query.record().indexOf("OBJECT_NAME");
+		while (query.next()) 
+		{
+			QString tableName = query.value(fieldNo).toString();
+			result.push_back(tableName);
+		}
+	}
+
+	return result;
 }
 
 void QTSqlGen::LoadODBCViewColumns()
@@ -978,7 +1054,7 @@ void QTSqlGen::GenRecordSource
 				}
 			}
 
-			if ((*column)._name != "_id")
+			if ((*column)._name != "_id" && (*column)._name != "ID")
 			{
 				fields.append((*column)._name);
 				binds.append(":" + (*column)._name);
