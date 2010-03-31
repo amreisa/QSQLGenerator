@@ -129,7 +129,7 @@ bool <%table%>Table::ClearTable()
 	bool result(false);
 
 	QSqlQuery query(_database->Database());
-	QString sql(QString("delete from <%table%>"));
+	QString sql(QString("delete from \"<%table%>\""));
 
 	QMutexLocker lock(&<%table%>Table::_mutex);
 
@@ -148,7 +148,7 @@ bool <%table%>Table::Get
 	bool result(false);
 
 	QSqlQuery query(_database->Database());
-	QString sql(QString("select * from <%table%> where %1 = %2").arg(record.Field(0)).arg(key));
+	QString sql(QString("select * from \"<%table%>\" where %1 = %2").arg(record.Field(0)).arg(key));
 
 	QMutexLocker lock(&<%table%>Table::_mutex);
 
@@ -189,7 +189,7 @@ bool <%table%>Table::Get
 
 	list.clear();
 
-	QString sql = "select * from <%table%>";
+	QString sql = "select * from \"<%table%>\"";
 
 	if (constraints.GetFilterStatement().length() > 0)
 		sql.append(" where " + constraints.GetFilterStatement());
@@ -237,7 +237,7 @@ quint32	<%table%>Table::GetKey
 	quint32 id = -1;
 	QString sql;
 
-	sql = QString("select %1 from <%table%> where %2 = '%3'").arg(ent.Field(0)).arg(colName)
+	sql = QString("select \"%1\" from \"<%table%>\" where %2 = '%3'").arg(ent.Field(0)).arg(colName)
 		.arg(QString(colValue).replace('\'', "''"));
 
 	QSqlQuery query(_database->Database());
@@ -257,7 +257,7 @@ bool <%table%>Table::Delete
 	<%table%>Record ent;
 	bool result(false);
 
-	QString sql(QString("delete from <%table%> where %1 = %2").arg(ent.Field(0)).arg(key));
+	QString sql(QString("delete from \"<%table%>\" where %1 = %2").arg(ent.Field(0)).arg(key));
 
 	QSqlQuery deleteQuery(_database->Database());
 	QMutexLocker lock(&<%table%>Table::_mutex);
@@ -304,7 +304,7 @@ bool <%table%>Table::Update
 		upd.append(v);
     }
 
-	sql = QString("update <%table%> set %1 where %2 = %3").arg(upd).arg(ent.Field(0)).arg(key);
+	sql = QString("update \"<%table%>\" set \"%1\" where \"%2\" = %3").arg(upd).arg(ent.Field(0)).arg(key);
 
 	QSqlQuery updateQuery(_database->Database());
 

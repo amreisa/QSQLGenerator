@@ -39,7 +39,7 @@ static char* gConnectionStrings[] =
 	"Driver={SQL Server};Server=<%server%>;Database=<%database%>;Uid=<%user%>;Pwd=<%pass%>;",
 	"Driver={Microsoft Access Driver (*.mdb)};Dbq=<%database%>;Uid=<%user%>;Pwd=<%pass%>;",
 	"Driver={MySQL ODBC 5.1 Driver};Server=<%server%>;Port=<%port%>;Database=<%database%>;User=<%user%>; Password=<%pass%>;Option=3;",
-	"Driver={Microsoft ODBC for Oracle};Server=<%server%>;Uid=<%user%>;Pwd=<%pass%>;",
+	"Driver=Driver={Oracle ODBC};DBQ=<%server%>;Uid=<%user%>;Pwd=<%pass%>;",
 	"Driver={PostgreSQL UNICODE};Server=<%server%>;Port=<%port%>;Database=<%database%>;Uid=<%user%>;Pwd=<%pass%>;"
 };
 

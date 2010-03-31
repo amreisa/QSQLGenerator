@@ -451,7 +451,7 @@ void QTSqlGen::LoadODBCColumns()
 			break;
 
 		case eOracle: 
-			tableQuery = "SELECT * from <%T%> WHERE ROWNUM <= 1";
+			tableQuery = "SELECT * from \"<%T%>\" WHERE ROWNUM <= 1";
 			break;
 		}
 
@@ -1455,7 +1455,7 @@ void QTSqlGen::WriteExportHeaderFile()
 {
 	SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL && currentProject->_dynamicLibrary == true)
+	if (currentProject != NULL)
 	{
 		QFile templateFile;
 		QFile srcFile;
