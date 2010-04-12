@@ -484,6 +484,7 @@ void QTSqlGen::LoadODBCColumns()
 					case QVariant::Time: column._type = Column::eTime; break;
 					case QVariant::Double: column._type = Column::eReal; break;
 					case QVariant::Bool: column._type = Column::eBoolean; break;
+					case QVariant::ByteArray: column._type = Column::eBytes; break;
 					default: 
 						column._type = Column::eUnknown; 
 
@@ -495,13 +496,6 @@ void QTSqlGen::LoadODBCColumns()
 						AppendOutput(message);
 						break;
 					}
-
-					QString message = "Type:";
-					message += QString(QVariant::typeToName(sqlField.type()));
-					message += " In Column:" + column._name;
-					message += " In Table:" + (*iter)._name;
-
-					AppendOutput(message);
 
 					(*iter)._columns.push_back(column);
 				}
@@ -784,6 +778,10 @@ QString QTSqlGen::GenerateFieldType
 			fieldType = "eString";
 			break;
 
+		case Column::eBytes:
+			fieldType = "eBytes";
+			break;
+
 		case Column::eInt:
 			fieldType = "eInteger";
 			break;
@@ -855,6 +853,10 @@ QString QTSqlGen::GenerateSelector
 	{
 	case Column::eText:
 		templateFile.setFileName(":/templates/Resources/SelectorString");
+		break;
+
+	case Column::eBytes:
+		templateFile.setFileName(":/templates/Resources/SelectorBytes");
 		break;
 
 	case Column::eDateTime:
@@ -941,6 +943,10 @@ void QTSqlGen::GenRecordHeader
 			{
 			case Column::eText:
 				accessors += GenerateAccessor(name, QString("const QString&"));
+				break;
+
+			case Column::eBytes:
+				accessors += GenerateAccessor(name, QString("const QByteArray&"));
 				break;
 
 			case Column::eDateTime:
@@ -1276,6 +1282,10 @@ QString QTSqlGen::GenerateAccessorSource
 	{
 	case Column::eText:
 		templateFile.setFileName(":/templates/Resources/AccessorSourceString");
+		break;
+
+	case Column::eBytes:
+		templateFile.setFileName(":/templates/Resources/AccessorSourceBytes");
 		break;
 
 	case Column::eDateTime:

@@ -3,6 +3,7 @@
         <file>Resources/About.png</file>
         <file>Resources/Accessor</file>
         <file>Resources/AccessorSourceBoolean</file>
+        <file>Resources/AccessorSourceBytes</file>
         <file>Resources/AccessorSourceDate</file>
         <file>Resources/AccessorSourceDateTime</file>
         <file>Resources/AccessorSourceGUID</file>
@@ -25,6 +26,7 @@
         <file>Resources/SelectionCriteria.cpp</file>
         <file>Resources/SelectionCriteria.h</file>
         <file>Resources/SelectorBoolean</file>
+        <file>Resources/SelectorBytes</file>
         <file>Resources/SelectorDate</file>
         <file>Resources/SelectorDateTime</file>
         <file>Resources/SelectorGUID</file>

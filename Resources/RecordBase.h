@@ -28,6 +28,7 @@
 // Changes will be overwritten.
 
 #include <QSqlQuery>
+#include <QByteArray>
 #include <QDate>
 #include <QDateTime>
 #include <QStringList>
@@ -49,6 +50,7 @@ enum ColumnType
 {
 	eUnknown,
 	eString,
+	eBytes,
 	eInteger,
 	eDateTime,
 	eDate,

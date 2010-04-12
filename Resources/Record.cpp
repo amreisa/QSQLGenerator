@@ -29,7 +29,7 @@
 
 QString <%table%>Record::_insertStatement
 (
-	"Insert into <%table%>"
+	"Insert into \"<%table%>\""
 	"(<%fields%>) "
 	"values (<%binds%>)"
 );

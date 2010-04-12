@@ -44,6 +44,7 @@ struct Column
 	{
 		eUnknown,
 		eText,
+		eBytes,
 		eInt,
 		eUInt,
 		eReal,
