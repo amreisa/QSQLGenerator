@@ -27,8 +27,13 @@
 // Do not modify!!!!!
 // Changes will be overwritten.
 
+#include <QByteArray>
+#include <QDate>
+#include <QDateTime>
 #include <QList>
 #include <QSqlQuery>
+#include <QTime>
+#include <QUuid>
 
 #include "<%productInclude%>"
 
