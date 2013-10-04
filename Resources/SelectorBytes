@@ -1,0 +1,35 @@
+	// Setters for column <%name%>
+	void <%tableName%>SelectionCriteria::<%uName%>EqualsTo(const QByteArray& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> = '" + <%lName%> + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>NotEqualsTo(const QByteArray& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> <> '" + <%lName%> + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>LessThan(const QByteArray& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> < '" + <%lName%> + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>GreaterThan(const QByteArray& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> > '" + <%lName%> + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>LessThanOrEqualTo(const QByteArray& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> <= '" + <%lName%> + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>GreaterThanOrEqualTo(const QByteArray& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> >= '" + <%lName%> + "'");
+	}
+
+	void <%tableName%>SelectionCriteria::<%uName%>OrderBy(bool ascending)
+	{
+		AppendSortCriteria("<%name%>", ascending);
+	}
