@@ -1,7 +1,7 @@
 #ifndef <%PRODUCTNAME%>DB_H
 #define <%PRODUCTNAME%>DB_H
 
-// This File was auto generated on <%date%> by QTSqlGen.  
+// This File was auto generated on <%date%> by <%applicationName%>.  
 // Do not modify!!!!!
 // Changes will be overwritten.
 

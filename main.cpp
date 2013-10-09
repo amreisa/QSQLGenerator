@@ -29,7 +29,7 @@ quint32 main(int argc, char *argv[])
 
 	a.setOrganizationDomain("opensource.org");
 	a.setOrganizationName("OpenSource");
-	a.setApplicationName("QTSqliteGen");
+	a.setApplicationName("qt-sqlite-generator");
 
     QTSqlGen w;
     w.show();

@@ -1602,6 +1602,7 @@ void QTSqlGen::StandardReplacements
 	replaceMe.replace("<%headers%>", _headers.toAscii());
 	replaceMe.replace("<%headerFiles%>", _headerFiles.toAscii());
 	replaceMe.replace("<%date%>", _now.toString().toAscii());
+	replaceMe.replace("<%applicationName%>", QCoreApplication::applicationName().toAscii());
 
 	QString productNamespace = _namespaceEdit->text();
 
