@@ -27,6 +27,8 @@
 // Do not modify!!!!!
 // Changes will be overwritten.
 
+<%namespaceStart%>
+
 QString <%table%>Record::_insertStatement
 (
 	"Insert into \"<%table%>\""
@@ -79,3 +81,5 @@ void <%table%>Record::FieldList
 }
 
 <%accessors%>
+
+<%namespaceEnd%>

@@ -28,7 +28,7 @@
 // This File was auto generated on <%date%> by QTSqlGen.  
 // Do not modify!!!!!
 // Changes will be overwritten.
-
+<%namespaceStart%>
 <%record%>View::<%record%>View() : 
 	_db(<%productName%>Database::GetInstance()),
 	_dom(0)
@@ -165,4 +165,4 @@ QDomDocument& <%record%>View::getDom
 
 	return *_dom;
 }
-
+<%namespaceEnd%>

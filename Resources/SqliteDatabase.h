@@ -31,6 +31,7 @@
 
 #include "<%productInclude%>"
 <%includes%>
+<%namespaceStart%>
 // singleton class encapsulating Qt database
 class <%dllExport%> <%productName%>Database
 {
@@ -80,5 +81,5 @@ protected:
 	QString						_connectionName;
 	QString						_filePath;
 };
-
+<%namespaceEnd%>
 #endif

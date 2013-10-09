@@ -41,6 +41,7 @@
 #include "<%productInclude%>"
 
 class QDomDocument;
+<%namespaceStart%>
 class Database;
 
 typedef QHash<QString, QVariant> UpdateHash;
@@ -152,6 +153,6 @@ protected:
 private:
 	RecordBase();
 };
-
+<%namespaceEnd%>
 #endif
 

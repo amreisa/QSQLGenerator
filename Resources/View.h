@@ -29,7 +29,7 @@
 
 #include <QMutex>
 #include "<%record%>Record.h"
-
+<%namespaceStart%>
 class <%dllExport%> <%record%>View
 {
 public:
@@ -46,5 +46,5 @@ private:
 	QMutex						_mutex;
 	<%productName%>Database*	_db;
 };
-
+<%namespaceEnd%>
 #endif

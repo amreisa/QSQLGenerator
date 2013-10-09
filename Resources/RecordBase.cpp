@@ -28,7 +28,7 @@
 // This File was auto generated on <%date%> by QTSqlGen.  
 // Do not modify!!!!!
 // Changes will be overwritten.
-
+<%namespaceStart%>
 const static QString kTagID   = "id";
 const static QString kTagAttr = "attribute";
 const static QString kTagName = "name";
@@ -561,4 +561,4 @@ QString RecordBase::ToXml
 {
 	return GetDom(preferAttrib, skipEmpty, upperCase).toString();
 }
-
+<%namespaceEnd%>

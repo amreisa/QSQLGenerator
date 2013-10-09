@@ -26,7 +26,7 @@
 // This File was auto generated on <%date%> by QTSqlGen.  
 // Do not modify!!!!!
 // Changes will be overwritten.
-
+<%namespaceStart%>
 <%table%>SelectionCriteria::<%table%>SelectionCriteria() :
 	_filterConjunction(false),
 	_levels(0)
@@ -125,4 +125,4 @@ void <%table%>SelectionCriteria::EndPrecedence()
 		_levels--;
 	}
 }
-
+<%namespaceEnd%>

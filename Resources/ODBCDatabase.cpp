@@ -29,7 +29,7 @@
 // Changes will be overwritten.
 
 #include <QCoreApplication.h>
-
+<%namespaceStart%>
 static quint32 gConnectionCount(1); 
 
 static char* gConnectionStrings[] = 
@@ -194,3 +194,4 @@ bool <%productName%>Database::IsOpen()
 }
 
 <%tableRoutines%>
+<%namespaceEnd%>

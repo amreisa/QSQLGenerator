@@ -33,7 +33,7 @@
 <%includes%>
 
 #include "ODBCDrivers.h"
-
+<%namespaceStart%>
 // singleton class encapsulating Qt database
 class <%dllExport%> <%productName%>Database
 {
@@ -102,5 +102,5 @@ private:
 
 	void BuildConnectionString(void);
 };
-
+<%namespaceEnd%>
 #endif

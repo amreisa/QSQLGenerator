@@ -36,7 +36,7 @@
 #include <QUuid>
 
 #include "<%productInclude%>"
-
+<%namespaceStart%>
 class <%dllExport%> <%table%>SelectionCriteria 
 {
 public:
@@ -80,6 +80,5 @@ private:
 	QString				_filterStatement;
 	QString				_orderStatement;
 };
-
-
+<%namespaceEnd%>
 #endif

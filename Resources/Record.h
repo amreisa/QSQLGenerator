@@ -32,7 +32,7 @@
 
 #include "RecordBase.h"
 #include "<%productInclude%>"
-
+<%namespaceStart%>
 class <%dllExport%> <%table%>Record : 
 	public RecordBase
 {
@@ -61,5 +61,5 @@ private:
 
 typedef QList<<%table%>Record> <%table%>RecordList;
 typedef QList<<%table%>Record>::iterator <%table%>RecordListIter;
-
+<%namespaceEnd%>
 #endif

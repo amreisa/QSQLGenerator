@@ -1602,6 +1602,24 @@ void QTSqlGen::StandardReplacements
 	replaceMe.replace("<%headers%>", _headers.toAscii());
 	replaceMe.replace("<%headerFiles%>", _headerFiles.toAscii());
 	replaceMe.replace("<%date%>", _now.toString().toAscii());
+
+	QString productNamespace = _namespaceEdit->text();
+
+	if (!productNamespace.isEmpty())
+	{
+		QString namespaceStart = "\nnamespace ";
+		namespaceStart += productNamespace;
+		namespaceStart += "\n{\n";
+
+		replaceMe.replace("<%namespaceStart%>", namespaceStart.toAscii());
+		replaceMe.replace("<%namespaceEnd%>", "\n}\n");
+	}
+	else
+	{
+		// Replace anyways, as productNamespace is an empty string
+		replaceMe.replace("<%namespaceStart%>", productNamespace.toAscii());
+		replaceMe.replace("<%namespaceEnd%>", productNamespace.toAscii());
+	}
 }
 
 

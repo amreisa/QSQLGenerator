@@ -30,7 +30,7 @@
 // This File was auto generated on <%date%> by QTSqlGen.  
 // Do not modify!!!!!
 // Changes will be overwritten.
-
+<%namespaceStart%>
 QMutex <%table%>Table::_mutex;
 QSqlQuery* <%table%>Table::_insertQuery(NULL);
 
@@ -373,3 +373,4 @@ QDomDocument& <%table%>Table::GetDom
 	return *_dom;
 }
 */
+<%namespaceEnd%>

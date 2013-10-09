@@ -33,8 +33,9 @@
 
 #include "<%productInclude%>"
 
-class <%productName%>Database;
 class QSqlQuery;
+<%namespaceStart%>
+class <%productName%>Database;
 
 class <%dllExport%> <%table%>Table
 {
@@ -64,5 +65,5 @@ private:
 	static QSqlQuery*			_insertQuery;
 	static QString				_createStatement;
 };
-
+<%namespaceEnd%>
 #endif
