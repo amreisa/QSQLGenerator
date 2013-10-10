@@ -20,7 +20,7 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-#include "<%productName%>database.h"
+#include "<%productName%>Database.h"
 #include <QSqlQuery>
 #include <QSqlError>
 
@@ -28,7 +28,7 @@
 // Do not modify!!!!!
 // Changes will be overwritten.
 
-#include <QCoreApplication.h>
+#include <QCoreApplication>
 <%namespaceStart%>
 static quint32 gConnectionCount(1); 
 
