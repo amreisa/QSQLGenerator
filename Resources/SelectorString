@@ -29,6 +29,16 @@
 		AppendFilterCondition("<%name%> >= '" + <%lName%> + "'");
 	}
 
+	void <%uName%>Like(const QString& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> like '" + <%lName%> + "'");
+	}
+	
+	void <%uName%>NotLike(const QString& <%lName%>)
+	{
+		AppendFilterCondition("<%name%> not like '" + <%lName%> + "'");
+	}
+	
 	void <%uName%>OrderBy(bool ascending)
 	{
 		AppendSortCriteria("<%name%>", ascending);
