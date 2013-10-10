@@ -50,6 +50,7 @@ public:
 	bool Delete(quint32 key);
 
 	bool Get(QList<<%table%>Record>& recordList, <%table%>SelectionCriteria& constraints = <%table%>SelectionCriteria());
+	bool Get(QList<QVariant>& columnList, const QString& columnName, <%table%>SelectionCriteria& constraints = <%table%>SelectionCriteria());
 	bool Get(quint32 key, <%table%>Record& record);
 	quint32 GetKey(<%table%>Record& record, const QString& propName, const QString& propValue);
 

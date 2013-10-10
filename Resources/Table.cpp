@@ -227,6 +227,41 @@ bool <%table%>Table::Get
 	return result;
 }
 
+bool <%table%>Table::Get
+(	
+	QList<QVariant>& columnList,
+	const QString& columnName,
+	<%table%>SelectionCriteria& constraints
+)
+{
+	bool result(false);
+
+	columnList.clear();
+
+	QString sql = "select " + columnName + " from \"<%table%>\"";
+
+	if (constraints.GetFilterStatement().length() > 0)
+		sql.append(" where " + constraints.GetFilterStatement());
+
+	if (constraints.GetOrderStatement().size() > 0)
+		sql.append(" order by " + constraints.GetOrderStatement());
+
+	QMutexLocker lock(&<%table%>Table::_mutex);
+
+	QSqlQuery query(_database->Database());
+
+	if (query.exec(sql)) 
+	{
+		while (query.next()) 
+		{
+			columnList.push_back(query.value(0));
+			result = true;
+		}
+	}
+
+	return result;
+}
+
 quint32	<%table%>Table::GetKey
 (
 	<%table%>Record& ent, 
