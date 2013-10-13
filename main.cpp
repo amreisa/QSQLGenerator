@@ -23,7 +23,7 @@
 #include <QtGui/QApplication>
 #include "QTSqlGen.h"
 
-quint32 main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
