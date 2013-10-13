@@ -35,7 +35,7 @@ enum DatabaseSourceType
 	eUnknown
 };
 
-#include ".\\Resources\\ODBCDrivers.h"
+#include <Resources/ODBCDrivers.h>
 
 class SqlProject : public QObject
 {
