@@ -1,5 +1,5 @@
 	// Setters for column <%name%>
-	void <%tableName%>SelectionCriteria::<%uName%>EqualsTo(const QUuid& <%lName%>)
+	void <%uName%>EqualsTo(const QUuid& <%lName%>)
 	{	
 		QString temp(<%lName%>.toString());
 
@@ -7,7 +7,7 @@
 		AppendFilterCondition("<%name%> = '" + temp + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>NotEqualsTo(const QUuid& <%lName%>)
+	void <%uName%>NotEqualsTo(const QUuid& <%lName%>)
 	{
 		QString temp(<%lName%>.toString());
 
@@ -15,7 +15,7 @@
 		AppendFilterCondition("<%name%> <> '" + temp + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>LessThan(const QUuid& <%lName%>)
+	void <%uName%>LessThan(const QUuid& <%lName%>)
 	{
 		QString temp(<%lName%>.toString());
 
@@ -23,7 +23,7 @@
 		AppendFilterCondition("<%name%> < '" + temp + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>GreaterThan(const QUuid& <%lName%>)
+	void <%uName%>GreaterThan(const QUuid& <%lName%>)
 	{
 		QString temp(<%lName%>.toString());
 
@@ -31,7 +31,7 @@
 		AppendFilterCondition("<%name%> > '" + temp + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>LessThanOrEqualTo(const QUuid& <%lName%>)
+	void <%uName%>LessThanOrEqualTo(const QUuid& <%lName%>)
 	{
 		QString temp(<%lName%>.toString());
 
@@ -39,7 +39,7 @@
 		AppendFilterCondition("<%name%> <= '" + temp + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>GreaterThanOrEqualTo(const QUuid& <%lName%>)
+	void <%uName%>GreaterThanOrEqualTo(const QUuid& <%lName%>)
 	{
 		QString temp(<%lName%>.toString());
 
@@ -47,7 +47,7 @@
 		AppendFilterCondition("<%name%> >= '" + temp + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>OrderBy(bool ascending)
+	void <%uName%>OrderBy(bool ascending)
 	{
 		AppendSortCriteria("<%name%>", ascending);
 	}

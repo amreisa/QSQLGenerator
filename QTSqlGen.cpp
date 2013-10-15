@@ -832,7 +832,6 @@ QString QTSqlGen::GenerateFieldType
 
 QString QTSqlGen::GenerateSelector
 (
-	const QString& tableName, 
 	const QString& name, 
 	const Column::Type type
 )
@@ -893,7 +892,6 @@ QString QTSqlGen::GenerateSelector
 		accessor = templateFile.readAll();
 
 		accessor.replace(QByteArray("<%uName%>"), uName.toAscii());
-		accessor.replace(QByteArray("<%tableName%>"), tableName.toAscii());
 		accessor.replace(QByteArray("<%lName%>"), lName.toAscii());
 		accessor.replace(QByteArray("<%name%>"), name.toAscii());
 
@@ -1131,7 +1129,7 @@ void QTSqlGen::GenSelectionHeader
 		ColumnIter column = table._columns.begin();
 		while (column != table._columns.end())
 		{
-			accessors.append(GenerateSelector(tableName, (*column)._name, (*column)._type));
+            accessors.append(GenerateSelector((*column)._name, (*column)._type));
 
 			column++;
 		}

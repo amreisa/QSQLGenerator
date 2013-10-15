@@ -1,35 +1,35 @@
 	// Setters for column <%name%>
-	void <%tableName%>SelectionCriteria::<%uName%>EqualsTo(quint32 <%lName%>)
+	void <%uName%>EqualsTo(quint32 <%lName%>)
 	{
 		AppendFilterCondition("<%name%> = " + QString::number(<%lName%>));
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>NotEqualsTo(quint32 <%lName%>)
+	void <%uName%>NotEqualsTo(quint32 <%lName%>)
 	{
 		AppendFilterCondition("<%name%> <> " + QString::number(<%lName%>));
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>LessThan(quint32 <%lName%>)
+	void <%uName%>LessThan(quint32 <%lName%>)
 	{
 		AppendFilterCondition("<%name%> < " + QString::number(<%lName%>));
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>GreaterThan(quint32 <%lName%>)
+	void <%uName%>GreaterThan(quint32 <%lName%>)
 	{
 		AppendFilterCondition("<%name%> > " + QString::number(<%lName%>));
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>LessThanOrEqualTo(quint32 <%lName%>)
+	void <%uName%>LessThanOrEqualTo(quint32 <%lName%>)
 	{
 		AppendFilterCondition("<%name%> <= " + QString::number(<%lName%>));
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>GreaterThanOrEqualTo(quint32 <%lName%>)
+	void <%uName%>GreaterThanOrEqualTo(quint32 <%lName%>)
 	{
 		AppendFilterCondition("<%name%> >= " + QString::number(<%lName%>));
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>OrderBy(bool ascending)
+	void <%uName%>OrderBy(bool ascending)
 	{
 		AppendSortCriteria("<%name%>", ascending);
 	}

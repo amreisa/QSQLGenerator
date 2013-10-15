@@ -66,7 +66,7 @@ private:
 	void GenSelectionSource(Table& table);
 	QString GenerateAccessor(const QString& name, const QString& type);
 	QString GenerateAccessorSource(const QString& tableName, const QString& name, const Column::Type type);
-	QString GenerateSelector(const QString& tableName, const QString& name, const Column::Type type);
+    QString GenerateSelector(const QString& name, const Column::Type type);
 	QString GenerateFieldType(const QString& columnName, const QString& name, Column::Type type);
 	QString GenerateTableRoutine(const Table& table);
 

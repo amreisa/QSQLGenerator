@@ -1,35 +1,35 @@
 	// Setters for column <%name%>
-	void <%tableName%>SelectionCriteria::<%uName%>EqualsTo(const QString& <%lName%>)
+	void <%uName%>EqualsTo(const QString& <%lName%>)
 	{
 		AppendFilterCondition("<%name%> = '" + <%lName%> + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>NotEqualsTo(const QString& <%lName%>)
+	void <%uName%>NotEqualsTo(const QString& <%lName%>)
 	{
 		AppendFilterCondition("<%name%> <> '" + <%lName%> + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>LessThan(const QString& <%lName%>)
+	void <%uName%>LessThan(const QString& <%lName%>)
 	{
 		AppendFilterCondition("<%name%> < '" + <%lName%> + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>GreaterThan(const QString& <%lName%>)
+	void <%uName%>GreaterThan(const QString& <%lName%>)
 	{
 		AppendFilterCondition("<%name%> > '" + <%lName%> + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>LessThanOrEqualTo(const QString& <%lName%>)
+	void <%uName%>LessThanOrEqualTo(const QString& <%lName%>)
 	{
 		AppendFilterCondition("<%name%> <= '" + <%lName%> + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>GreaterThanOrEqualTo(const QString& <%lName%>)
+	void <%uName%>GreaterThanOrEqualTo(const QString& <%lName%>)
 	{
 		AppendFilterCondition("<%name%> >= '" + <%lName%> + "'");
 	}
 
-	void <%tableName%>SelectionCriteria::<%uName%>OrderBy(bool ascending)
+	void <%uName%>OrderBy(bool ascending)
 	{
 		AppendSortCriteria("<%name%>", ascending);
 	}
