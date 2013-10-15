@@ -8,8 +8,6 @@ CONFIG *= <%linkage%>
 DEFINES += <%linkagedef%>
 QT *= xml sql
 TARGET = <%productName%>DB
-QMAKE_INCDIR_QT = $(QTDIR)\include
-QMAKE_LIBDIR_QT = $(QTDIR)\libs
   
 CONFIG(debug, debug|release) {
   DESTDIR = debug
