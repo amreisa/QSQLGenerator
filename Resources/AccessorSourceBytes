@@ -1,4 +1,4 @@
-void <%tableName%>Record::set<%uName%>
+void <%tableName%>Record::Set<%uName%>
 (
 	const QByteArray& <%name%>
 )

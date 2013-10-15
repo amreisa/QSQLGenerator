@@ -1,2 +1,2 @@
-	void set<%uName%>(<%inType%> <%name%>);
+	void Set<%uName%>(<%inType%> <%name%>);
 	<%outType%> <%uName%>(void);
