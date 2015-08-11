@@ -26,13 +26,12 @@
 #include "ui_ProjectNameDialog.h"
 
 class ProjectNameDialog : 
-	public QDialog, 
-	public Ui::ProjectNameDialogClass
+    public QDialog, public Ui::ProjectNameDialogClass
 {
     Q_OBJECT
 
 public:
-    ProjectNameDialog(QWidget* parent = NULL, Qt::WFlags flags = 0);
+    ProjectNameDialog( QWidget* parent = NULL, Qt::WindowFlags flags = 0 );
     ~ProjectNameDialog();
 };
 

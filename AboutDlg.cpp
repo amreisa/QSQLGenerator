@@ -22,23 +22,19 @@
 
 #include "AboutDlg.h"
 
-AboutDlg::AboutDlg
-(
-	QWidget* parent, 
-	Qt::WFlags flags
-) : 
-	QDialog(parent, flags)
+AboutDlg::AboutDlg( QWidget* parent, Qt::WindowFlags flags ) :
+    QDialog( parent, flags )
 {
-	setupUi(this);
-	connect(_okButton, SIGNAL(clicked( bool)), this, SLOT(on_okButton_clicked(bool)));
+    setupUi( this );
+    connect( _okButton, SIGNAL( clicked( bool ) ), this, SLOT( on_okButton_clicked( bool ) ) );
 }
 
 AboutDlg::~AboutDlg()
 {
 }
 
-void AboutDlg::on_okButton_clicked(bool checked)
+void AboutDlg::on_okButton_clicked( bool checked )
 {
-	accept();
+    accept();
 }
 

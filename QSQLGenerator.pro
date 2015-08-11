@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = 
+TARGET = QSQLGenerator
 DEPENDPATH += .
 INCLUDEPATH += .
 
@@ -22,3 +22,4 @@ SOURCES += AboutDlg.cpp \
 RESOURCES += QTSqlGen.qrc
 
 QT += sql
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

@@ -30,29 +30,29 @@
 
 enum DatabaseSourceType
 {
-	eODBC,
-	eSqlite,
-	eUnknown
+    eODBC,
+    eSqlite,
+    eUnknown
 };
 
 #include <Resources/ODBCDrivers.h>
 
 class SqlProject : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	SqlProject();
-	~SqlProject();
+    SqlProject();
+    ~SqlProject();
 
-	QString						_projectName;
-	QString						_targetPath;
-	QString						_databasePath;
-	QString						_connectString;
-	bool						_writeProject;
-	bool						_dynamicLibrary;
-	DatabaseSourceType			_sourceType;
-	ODBCDrivers					_odbcDriver;
+    QString                     _projectName;
+    QString                     _targetPath;
+    QString                     _databasePath;
+    QString                     _connectString;
+    bool                        _writeProject;
+    bool                        _dynamicLibrary;
+    DatabaseSourceType          _sourceType;
+    ODBCDrivers                 _odbcDriver;
 };
 
 #endif

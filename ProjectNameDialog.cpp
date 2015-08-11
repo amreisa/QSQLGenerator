@@ -22,14 +22,10 @@
 
 #include "ProjectNameDialog.h"
 
-ProjectNameDialog::ProjectNameDialog
-(
-	QWidget* parent, 
-	Qt::WFlags flags
-) : 
-	QDialog(parent, flags)
+ProjectNameDialog::ProjectNameDialog( QWidget* parent, Qt::WindowFlags flags ) :
+    QDialog( parent, flags )
 {
-	setupUi(this);
+    setupUi( this );
 }
 
 ProjectNameDialog::~ProjectNameDialog()

@@ -28,32 +28,32 @@
 
 struct Column
 {
-	Column()
-	{
-		_type = eUnknown;
-	}
+    Column()
+    {
+        _type = eUnknown;
+    }
 
-	Column(const Column& copyMe)
-	{
-		_name = copyMe._name;
-		_type = copyMe._type;
-	}
+    Column( const Column& copyMe )
+    {
+        _name = copyMe._name;
+        _type = copyMe._type;
+    }
 
-	QString						_name;
-	enum Type
-	{
-		eUnknown,
-		eText,
-		eBytes,
-		eInt,
-		eUInt,
-		eReal,
-		eDate,
-		eTime,
-		eDateTime,
-		eGuid,
-		eBoolean
-	}							_type;
+    QString                     _name;
+    enum Type
+    {
+        eUnknown,
+        eText,
+        eBytes,
+        eInt,
+        eUInt,
+        eReal,
+        eDate,
+        eTime,
+        eDateTime,
+        eGuid,
+        eBoolean
+    }                           _type;
 };
 
 typedef QList<Column> Columns;
@@ -61,35 +61,35 @@ typedef QList<Column>::const_iterator ColumnIter;
 
 struct Table
 {
-	Table()
-	{
-	}
+    Table()
+    {
+    }
 
-	Table(const Table& copyMe)
-	{
-		_type = copyMe._type;
-		_name = copyMe._name;
-		_createStatement = copyMe._createStatement;
+    Table( const Table& copyMe )
+    {
+        _type = copyMe._type;
+        _name = copyMe._name;
+        _createStatement = copyMe._createStatement;
 
-		_columns.clear();
+        _columns.clear();
 
-		ColumnIter iter = (ColumnIter) copyMe._columns.begin();
-		while (iter != copyMe._columns.end())
-		{
-			_columns.push_back((*iter));
-			iter++;
-		}
-	}
+        ColumnIter iter = ( ColumnIter )copyMe._columns.begin();
+        while ( iter != copyMe._columns.end() )
+        {
+            _columns.push_back( ( *iter ) );
+            iter++;
+        }
+    }
 
-	enum Type
-	{
-		eTable,
-		eView,
-		eIndex
-	}							_type;
-	QString						_name;
-	QString						_createStatement;
-	QList<Column>				_columns;
+    enum Type
+    {
+        eTable,
+        eView,
+        eIndex
+    }                           _type;
+    QString                     _name;
+    QString                     _createStatement;
+    QList<Column>               _columns;
 };
 
 typedef QList<Table> Tables;

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>QT Sqlite Generator</string>
+   <string>QSQLGenerator</string>
   </property>
   <property name="windowIcon">
    <iconset resource="QTSqlGen.qrc">

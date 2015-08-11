@@ -35,607 +35,610 @@
 #include <QSqlError>
 #include <QVariant>
 
-void InitializeMap(void);
+void InitializeMap( void );
 QMap<QString, Column::Type> gDataMap;
 
-QTSqlGen::QTSqlGen
-(
-	QWidget* parent, 
-	Qt::WFlags flags
-) : 
-	QDialog(parent, flags),
-	_projectGUID(QUuid::createUuid().toString().toUpper()),
-	_now(QDate::currentDate())
+QTSqlGen::QTSqlGen( QWidget* parent, Qt::WindowFlags flags ) :
+    QDialog( parent, flags ),
+    _projectGUID( QUuid::createUuid().toString().toUpper() ),
+    _now( QDate::currentDate() )
 {
-	InitializeMap();
-
-	setupUi(this);
-
-	PopulateDrivers();
-
-	LoadProjects();
-
-	QStringList paths = QCoreApplication::libraryPaths();
-
-	AppendOutput("Paths:");
-	for (int i = 0; i < paths.size(); i++) 
-		AppendOutput("   " + paths.at(i));
-
+    InitializeMap();
+    setupUi( this );
+    PopulateDrivers();
+    LoadProjects();
+    QStringList paths = QCoreApplication::libraryPaths();
+    AppendOutput( tr( "Paths:" ) );
+    for ( int i = 0; i < paths.size(); i++ )
+        AppendOutput( "   " + paths.at( i ) );
 }
 
 QTSqlGen::~QTSqlGen()
 {
-	SaveProjects();
+    SaveProjects();
 }
 
-void QTSqlGen::SetProductName
-(
-	const QString& databaseName
-)
+void QTSqlGen::SetProductName( const QString& databaseName )
 {
-	quint32 pos = databaseName.lastIndexOf("/");
-	if (pos != -1)
-	{
-		_productName = databaseName.mid(pos + 1);
-		_productName = _productName.mid(0, _productName.indexOf("."));
-	}
-	else
-	{
-		_productName = databaseName;
-	}
+    quint32 pos = databaseName.lastIndexOf( "/" );
+    if ( pos != -1 )
+    {
+        _productName = databaseName.mid( pos + 1 );
+        _productName = _productName.mid( 0, _productName.indexOf( "." ) );
+    }
+    else
+    {
+        _productName = databaseName;
+    }
 
-	_productName[0] = QChar(_productName[0]).toUpper();
-	_productInclude = _productName + "Export.h";
-	_dllExport = "DLL_" + _productName.toUpper();
-	_dllExportDefine = _productName.toUpper() + "_DLL";
+    _productName[0] = QChar( _productName[0] ).toUpper();
+    _productInclude = _productName + "Export.h";
+    _dllExport = "DLL_" + _productName.toUpper();
+    _dllExportDefine = _productName.toUpper() + "_DLL";
 }
 
- void QTSqlGen::on__locatePath_clicked()
- {
-	SqlProject* currentProject = GetProject();
+void QTSqlGen::on__locatePath_clicked()
+{
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		QString s = QFileDialog::getOpenFileName(this, "Select a SQLite File", 
-			QDir::homePath(), "SQLite (*.dat *.db *.sdb *s3db)");
-		if (s.size() > 0)
-		{
-			_dbPath->setText(s);	
+    if ( currentProject != NULL )
+    {
+        QString s = QFileDialog::getOpenFileName( this, tr( "Select a SQLite File" ), QDir::homePath(), "SQLite (*.dat *.db *.sdb *s3db)" );
+        if ( s.size() > 0 )
+        {
+            _dbPath->setText( s );
 
-			currentProject->_databasePath = s;
-		}
-	}
- }
+            currentProject->_databasePath = s;
+        }
+    }
+}
 
 void QTSqlGen::on__locateTarget_clicked()
-{    	
-	SqlProject* currentProject = GetProject();
+{
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		QString s = QFileDialog::getExistingDirectory(this, "Select the target directory for the source files.", 
-			QDir::homePath());
+    if ( currentProject != NULL )
+    {
+        QString s = QFileDialog::getExistingDirectory( this, tr( "Select the target directory for the source files." ), QDir::homePath() );
 
-		if (s.size() > 0)
-		{
-			_targetPath->setText(s);	
-			currentProject->_targetPath = s;
-		}
-	}
+        if ( s.size() > 0 )
+        {
+            _targetPath->setText( s );
+            currentProject->_targetPath = s;
+        }
+    }
 }
 
 void QTSqlGen::on__genDal_clicked()
 {
-	SqlProject* currentProject = GetProject();
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject == NULL)
-		return;
+    if ( currentProject == NULL )
+        return;
 
-	if (currentProject->_projectName.size() == 0 || currentProject->_projectName == "<Untitled>")
-	{
-		AppendOutput("Supply a Product Name");
-		return;
-	}
+    if ( currentProject->_projectName.size() == 0 || currentProject->_projectName == "<Untitled>" )
+    {
+        AppendOutput( tr( "Supply a Product Name" ) );
+        return;
+    }
 
-	SetProductName(currentProject->_projectName);
+    SetProductName( currentProject->_projectName );
 
-	if (_targetPath->text().size() == 0)
-		return;
+    if ( _targetPath->text().size() == 0 )
+        return;
 
-	switch (currentProject->_sourceType)
-	{
-	case eODBC:
-		_db = QSqlDatabase::addDatabase("QODBC");
-		break;
+    switch ( currentProject->_sourceType )
+    {
+    case eODBC:
+        _db = QSqlDatabase::addDatabase( "QODBC" );
+        break;
 
-	case eSqlite:	
-		if (_dbPath->text().size() == 0)
-			return ;
+    case eSqlite:
+        if ( _dbPath->text().size() == 0 )
+            return ;
 
-		_db = QSqlDatabase::addDatabase("QSQLITE");
-		break;
+        _db = QSqlDatabase::addDatabase( "QSQLITE" );
+        break;
 
-	default:
-		AppendOutput("Invalid Source");
-		return;
-	}
+    default:
+        AppendOutput( tr( "Invalid Source" ) );
+        return;
+    }
 
-	if (_db.isValid() == false)
-	{
-		QSqlError se;
-	
-		se = _db.lastError();
+    if ( _db.isValid() == false )
+    {
+        QSqlError se;
 
-		AppendOutput(se.text());
+        se = _db.lastError();
 
-		return;
-	}
+        AppendOutput( se.text() );
 
-	switch (currentProject->_sourceType)
-	{
-	case eODBC:
-		_db.setDatabaseName(_connectionString->text());
-		break;
+        return;
+    }
 
-	case eSqlite:
-		_db.setDatabaseName(_dbPath->text());
-		break;
+    switch ( currentProject->_sourceType )
+    {
+    case eODBC:
+        _db.setDatabaseName( _connectionString->text() );
+        break;
 
-	}
+    case eSqlite:
+        _db.setDatabaseName( _dbPath->text() );
+        break;
 
-	if (_db.open())
-	{
-		_output->clear();
-		_headerFiles.clear();
-		_sources.clear();
-		_headers.clear();
+    }
 
-		switch (currentProject->_sourceType)
-		{
-		case eODBC:
-			LoadODBCTables();
-			LoadODBCColumns();
-			break;
+    if ( _db.open() )
+    {
+        _output->clear();
+        _headerFiles.clear();
+        _sources.clear();
+        _headers.clear();
 
-		case eSqlite:
-			LoadSqliteTables();
-			LoadSqliteColumns();
-			break;
-		}
+        switch ( currentProject->_sourceType )
+        {
+        case eODBC:
+            LoadODBCTables();
+            LoadODBCColumns();
+            break;
 
-        GenCode(_tables, "Table");
+        case eSqlite:
+            LoadSqliteTables();
+            LoadSqliteColumns();
+            break;
+        }
 
-		switch (currentProject->_sourceType)
-		{
-		case eODBC:
-			/*LoadODBCViews();
-			LoadODBCViewColumns();*/
-			break;
+        GenCode( _tables, "Table" );
 
-		case eSqlite:
-		LoadSqliteViews();
-		LoadSqliteViewColumns();
-			break;
-		}
+        switch ( currentProject->_sourceType )
+        {
+        case eODBC:
+            /*LoadODBCViews();
+            LoadODBCViewColumns();*/
+            break;
 
-		GenCode(_views, "View");
-		
-		WriteDatabaseFiles();
-		WriteStaticFiles();
-		WriteHeaderFile();
-		WriteExportHeaderFile();
+        case eSqlite:
+            LoadSqliteViews();
+            LoadSqliteViewColumns();
+            break;
+        }
 
-		if (_replaceProject->isChecked())
-			WriteProject();
-	}
-	else
-	{
-		QSqlError se = _db.lastError();
+        GenCode( _views, "View" );
 
-		QStringList drivers = QSqlDatabase::drivers();
+        WriteDatabaseFiles();
+        WriteStaticFiles();
+        WriteHeaderFile();
+        WriteExportHeaderFile();
 
-		AppendOutput("Open Database Error");
-		AppendOutput(se.text());
+        if ( _replaceProject->isChecked() )
+            WriteProject();
+    }
+    else
+    {
+        QSqlError se = _db.lastError();
 
-		AppendOutput("Drivers");
-		for (int i = 0; i < drivers.size(); ++i)
-			AppendOutput("   " + drivers.at(i));
-	}
+        QStringList drivers = QSqlDatabase::drivers();
+
+        AppendOutput( tr( "Open Database Error" ) );
+        AppendOutput( se.text() );
+
+        AppendOutput( tr( "Drivers" ) );
+        for ( int i = 0; i < drivers.size(); ++i )
+            AppendOutput( "   " + drivers.at( i ) );
+    }
 }
 
 void QTSqlGen::LoadSqliteTables()
 {
-	QSqlQuery query(_db);
-	quint32 typePosition;
-	quint32 namePosition;
-	quint32 sqlPosition;
+    QSqlQuery query( _db );
+    quint32 typePosition;
+    quint32 namePosition;
+    quint32 sqlPosition;
 
-	if (query.exec("select * from sqlite_master")) 
-	{    
-		QSqlRecord rec = query.record();
+    if ( query.exec( "select * from sqlite_master" ) )
+    {
+        QSqlRecord rec = query.record();
 
-		typePosition = rec.indexOf("type");
-		namePosition = rec.indexOf("name");
-		sqlPosition = rec.indexOf("sql");
+        typePosition = rec.indexOf( "type" );
+        namePosition = rec.indexOf( "name" );
+        sqlPosition = rec.indexOf( "sql" );
 
-		_tables.clear();
-		_indexes.clear();
+        _tables.clear();
+        _indexes.clear();
 
-		while (query.next()) 
-		{
-			QString type = query.value(typePosition).toString();
-			if (type == "table" | type == "index")
-			{
+        while ( query.next() )
+        {
+            QString type = query.value( typePosition ).toString();
+            if ( type == "table" | type == "index" )
+            {
 
-				QString name = query.value(namePosition).toString();
-				QString sql = query.value(sqlPosition).toString();
+                QString name = query.value( namePosition ).toString();
+                QString sql = query.value( sqlPosition ).toString();
 
-				if (sql.size() &&  name != "sqlite_sequence")
-				{
-					Table table;
+                if ( sql.size() &&  name != "sqlite_sequence" )
+                {
+                    Table table;
 
-					table._type = (type == "table") ? table.eTable : table.eIndex;
-					table._name = name;
-					table._createStatement = sql;
+                    table._type = ( type == "table" ) ? table.eTable : table.eIndex;
+                    table._name = name;
+                    table._createStatement = sql;
 
-					_tables.push_back(table);
-				}
-			}
-		}
+                    _tables.push_back( table );
+                }
+            }
+        }
 
-		AppendOutput("Tables:");
-		TableIter iter = _tables.begin();
-		while (iter != _tables.end())
-		{
-			QString type = ((*iter)._type == (*iter).eTable) ? "   Table: " : "   Index: ";
-			AppendOutput(type +  (*iter)._name);
-			iter++;
-		}
-	}
-	else
-	{		
-		QSqlError se = query.lastError();
+        AppendOutput( "Tables:" );
+        TableIter iter = _tables.begin();
+        while ( iter != _tables.end() )
+        {
+            QString type = ( ( *iter )._type == ( *iter ).eTable ) ? "   Table: " : "   Index: ";
+            AppendOutput( type +  ( *iter )._name );
+            iter++;
+        }
+    }
+    else
+    {
+        QSqlError se = query.lastError();
 
-		AppendOutput("Exec Failed");
-		AppendOutput(se.text());
-	}
+        AppendOutput( "Exec Failed" );
+        AppendOutput( se.text() );
+    }
 }
 
 void QTSqlGen::LoadSqliteColumns()
-{		
-	TableIter iter = _tables.begin();
-	while (iter != _tables.end())
-	{
-		QString tableName = (*iter)._name;
-		if ((*iter)._type == (*iter).eTable)
-		{
-			QStringList columns;
-			QString createQuery = (*iter)._createStatement;
-			QString removeStr("Create table " + (*iter)._name + " (");
-			createQuery = createQuery.simplified();
-			createQuery.replace("[", "");
-			createQuery.replace("]", "");
-			createQuery.replace(")", "");
-			createQuery.replace("\"", "");
-			createQuery.replace(removeStr, "", Qt::CaseInsensitive);
-			columns = createQuery.split(",");
-			QStringList::iterator columnText = columns.begin();
-			while (columnText != columns.end())
-			{
-				QStringList properties = (*columnText).split(" ", QString::SkipEmptyParts);		
-				Column column;
+{
+    TableIter iter = _tables.begin();
+    while ( iter != _tables.end() )
+    {
+        QString tableName = ( *iter )._name;
+        if ( ( *iter )._type == ( *iter ).eTable )
+        {
+            QStringList columns;
+            QString createQuery = ( *iter )._createStatement;
+            QString removeStr( "Create table " + ( *iter )._name + " (" );
+            createQuery = createQuery.simplified();
+            createQuery.replace( "[", "" );
+            createQuery.replace( "]", "" );
+            createQuery.replace( ")", "" );
+            createQuery.replace( "\"", "" );
+            createQuery.replace( removeStr, "", Qt::CaseInsensitive );
+            columns = createQuery.split( "," );
+            QStringList::iterator columnText = columns.begin();
+            while ( columnText != columns.end() )
+            {
+                QStringList properties = ( *columnText ).split( " ", QString::SkipEmptyParts );
+                Column column;
 
-				column._name = properties.at(0).simplified();
-				QString columnType = properties.at(1).toLower();
+                column._name = properties.at( 0 ).simplified();
+                QString columnType = properties.at( 1 ).toLower();
 
-				if (columnType.contains("varchar") == true)
-					columnType = "text";
+                if ( columnType.contains( "varchar" ) == true )
+                    columnType = "text";
 
-				QMap<QString, Column::Type>::iterator typeMapping = gDataMap.find(columnType.toLower());
-				if (typeMapping != gDataMap.end())
-					column._type = typeMapping.value();
-				else
-					column._type = column.eUnknown;
+                QMap<QString, Column::Type>::iterator typeMapping = gDataMap.find( columnType.toLower() );
+                if ( typeMapping != gDataMap.end() )
+                    column._type = typeMapping.value();
+                else
+                    column._type = column.eUnknown;
 
-				if (column._type == column.eUnknown)
-					AppendOutput("Unknown column type in Table:" + (*iter)._name + " Column:" + column._name + " " + columnType);
-				else
-					(*iter)._columns.push_back(column);
-				
-				columnText++;
-			}
-		}
-		iter++;
-	}
+                if ( column._type == column.eUnknown )
+                    AppendOutput( "Unknown column type in Table:" + ( *iter )._name + " Column:" + column._name + " " + columnType );
+                else
+                    ( *iter )._columns.push_back( column );
+
+                columnText++;
+            }
+        }
+        iter++;
+    }
 }
 void QTSqlGen::LoadSqliteViews()
 {
-	quint32 namePosition;
-	quint32 sqlPosition;
+    quint32 namePosition;
+    quint32 sqlPosition;
 
-	QSqlQuery query(_db);
-	if (query.exec("select * from sqlite_master where type = 'view'")) 
-	{    
-		QSqlRecord rec = query.record();
+    QSqlQuery query( _db );
+    if ( query.exec( "select * from sqlite_master where type = 'view'" ) )
+    {
+        QSqlRecord rec = query.record();
 
-		namePosition = rec.indexOf("name");
-		sqlPosition = rec.indexOf("sql");
+        namePosition = rec.indexOf( "name" );
+        sqlPosition = rec.indexOf( "sql" );
 
-		_views.clear();
+        _views.clear();
 
-		AppendOutput("Views:");
-		while (query.next()) 
-		{
-			QString name = query.value(namePosition).toString();
-			QString sql = query.value(sqlPosition).toString();
+        AppendOutput( "Views:" );
+        while ( query.next() )
+        {
+            QString name = query.value( namePosition ).toString();
+            QString sql = query.value( sqlPosition ).toString();
 
-			if ( sql.size() )
-			{
-				Table aView;
+            if ( sql.size() )
+            {
+                Table aView;
 
-			    aView._type = aView.eView;
-				aView._name = name;
-				aView._createStatement = sql;
+                aView._type = aView.eView;
+                aView._name = name;
+                aView._createStatement = sql;
 
-				_views.push_back(aView);
+                _views.push_back( aView );
 
-			    AppendOutput("   View: " +  aView._name);
-			}
-		}
-	}
-	else
-	{		
-		QSqlError se = query.lastError();
+                AppendOutput( "   View: " +  aView._name );
+            }
+        }
+    }
+    else
+    {
+        QSqlError se = query.lastError();
 
-		AppendOutput("Exec Failed");
-		AppendOutput(se.text());
-	}
+        AppendOutput( "Exec Failed" );
+        AppendOutput( se.text() );
+    }
 }
 
 
 void QTSqlGen::LoadSqliteViewColumns()
-{		
-	TableIter iter = _views.begin();
-	while (iter != _views.end())
-	{
-		QString tableName = (*iter)._name;
-	    if ((*iter)._type == (*iter).eView)    // safety check
-		{
-			QString createQuery = (*iter)._createStatement;
-			createQuery = createQuery.simplified();
-			createQuery.replace("[", "").replace("]", "").replace("\"", "");
-			QString removeStr("Create view " + tableName + " as select");
-			createQuery.replace(removeStr, "", Qt::CaseInsensitive);
-			quint32 fromInd = createQuery.indexOf ( "From", 0, Qt::CaseInsensitive);
+{
+    TableIter iter = _views.begin();
+    while ( iter != _views.end() )
+    {
+        QString tableName = ( *iter )._name;
+        if ( ( *iter )._type == ( *iter ).eView ) // safety check
+        {
+            QString createQuery = ( *iter )._createStatement;
+            createQuery = createQuery.simplified();
+            createQuery.replace( "[", "" ).replace( "]", "" ).replace( "\"", "" );
+            QString removeStr( "Create view " + tableName + " as select" );
+            createQuery.replace( removeStr, "", Qt::CaseInsensitive );
+            quint32 fromInd = createQuery.indexOf ( "From", 0, Qt::CaseInsensitive );
             createQuery = createQuery.left( fromInd );  // remove 'from' clause and everything after it
 
-			QStringList columns = createQuery.split(",");
-			QStringList::iterator columnText = columns.begin();
-			while (columnText != columns.end())
-			{
-				QStringList properties = (*columnText).split("as", QString::SkipEmptyParts);		
-				Column column;	
+            QStringList columns = createQuery.split( "," );
+            QStringList::iterator columnText = columns.begin();
+            while ( columnText != columns.end() )
+            {
+                QStringList properties = ( *columnText ).split( "as", QString::SkipEmptyParts );
+                Column column;
                 column._type = column.eText;  //since create view sql does not contain type information
-				column._name = properties.at(1).simplified();
-				(*iter)._columns.push_back(column);
+                column._name = properties.at( 1 ).simplified();
+                ( *iter )._columns.push_back( column );
 
-				columnText++;
-			}
-		}
-		iter++;
-	}
+                columnText++;
+            }
+        }
+        iter++;
+    }
 }
 
 void QTSqlGen::LoadODBCColumns()
-{	
-	QString tableQuery;
+{
+    QString tableQuery;
 
-	SqlProject* currentProject = GetProject();
-	if (currentProject != NULL)
-	{
-		switch (currentProject->_odbcDriver)
-		{
-		case eSqlServer2000:  //sql server 2008
-		case eSqlServer2005:  //sql server 2005
-		case eSqlServer2008:	 //sql server 2000
-		case eAccess: 
-			tableQuery = "SELECT TOP 1 * FROM <%T%>";
-			break;
+    SqlProject* currentProject = GetProject();
+    if ( currentProject != NULL )
+    {
+        switch ( currentProject->_odbcDriver )
+        {
+        case eSqlServer2000:  //sql server 2008
+        case eSqlServer2005:  //sql server 2005
+        case eSqlServer2008:     //sql server 2000
+        case eAccess:
+            tableQuery = "SELECT TOP 1 * FROM <%T%>";
+            break;
 
-		case eMySql: 
-			tableQuery = "SELECT * FROM <%T%> LIMIT 1";
-			break;
+        case eMySql:
+            tableQuery = "SELECT * FROM <%T%> LIMIT 1";
+            break;
 
-		case ePostgres: 
-			tableQuery = "SELECT * FROM \"<%T%>\" LIMIT 1";
-			break;
+        case ePostgres:
+            tableQuery = "SELECT * FROM \"<%T%>\" LIMIT 1";
+            break;
 
-		case eOracle: 
-			tableQuery = "SELECT * from \"<%T%>\" WHERE ROWNUM <= 1";
-			break;
-		}
+        case eOracle:
+            tableQuery = "SELECT * from \"<%T%>\" WHERE ROWNUM <= 1";
+            break;
+        }
 
-		TableIter iter = _tables.begin();
-		while (iter != _tables.end())
-		{
-			QString selectStatement = tableQuery;
-			selectStatement.replace("<%T%>", (*iter)._name);
+        TableIter iter = _tables.begin();
+        while ( iter != _tables.end() )
+        {
+            QString selectStatement = tableQuery;
+            selectStatement.replace( "<%T%>", ( *iter )._name );
 
-			QSqlQuery query(_db);
+            QSqlQuery query( _db );
 
-			if (query.exec(selectStatement)) 
-			{    
-				QSqlRecord rec = query.record();
+            if ( query.exec( selectStatement ) )
+            {
+                QSqlRecord rec = query.record();
 
-				for (int i = 0; i < rec.count(); i++)
-				{
-					Column column;
-					QSqlField sqlField = rec.field(i);
+                for ( int i = 0; i < rec.count(); i++ )
+                {
+                    Column column;
+                    QSqlField sqlField = rec.field( i );
 
-					column._name = sqlField.name();
+                    column._name = sqlField.name();
 
-					switch (sqlField.type())
-					{
-					case QVariant::Int: column._type = Column::eInt; break;
-					case QVariant::String: column._type = Column::eText; break;
-					case QVariant::UInt: column._type = Column::eUInt; break;
-					case QVariant::DateTime: column._type = Column::eDateTime; break;
-					case QVariant::Date: column._type = Column::eDate; break;
-					case QVariant::Time: column._type = Column::eTime; break;
-					case QVariant::Double: column._type = Column::eReal; break;
-					case QVariant::Bool: column._type = Column::eBoolean; break;
-					case QVariant::ByteArray: column._type = Column::eBytes; break;
-					default: 
-						column._type = Column::eUnknown; 
+                    switch ( sqlField.type() )
+                    {
+                    case QVariant::Int:
+                        column._type = Column::eInt;
+                        break;
+                    case QVariant::String:
+                        column._type = Column::eText;
+                        break;
+                    case QVariant::UInt:
+                        column._type = Column::eUInt;
+                        break;
+                    case QVariant::DateTime:
+                        column._type = Column::eDateTime;
+                        break;
+                    case QVariant::Date:
+                        column._type = Column::eDate;
+                        break;
+                    case QVariant::Time:
+                        column._type = Column::eTime;
+                        break;
+                    case QVariant::Double:
+                        column._type = Column::eReal;
+                        break;
+                    case QVariant::Bool:
+                        column._type = Column::eBoolean;
+                        break;
+                    case QVariant::ByteArray:
+                        column._type = Column::eBytes;
+                        break;
+                    default:
+                        column._type = Column::eUnknown;
 
-						QString message = "Unhandled Type:";
-						message += QString(QVariant::typeToName(sqlField.type()));
-						message += " In Column:" + column._name;
-						message += " In Table:" + (*iter)._name;
+                        QString message = "Unhandled Type:";
+                        message += QString( QVariant::typeToName( sqlField.type() ) );
+                        message += " In Column:" + column._name;
+                        message += " In Table:" + ( *iter )._name;
 
-						AppendOutput(message);
-						break;
-					}
+                        AppendOutput( message );
+                        break;
+                    }
 
-					(*iter)._columns.push_back(column);
-				}
-			}
-			else
-			{		
-				QSqlError se = query.lastError();
+                    ( *iter )._columns.push_back( column );
+                }
+            }
+            else
+            {
+                QSqlError se = query.lastError();
 
-				AppendOutput("Exec Failed");
-				AppendOutput(se.text());
-			}
+                AppendOutput( "Exec Failed" );
+                AppendOutput( se.text() );
+            }
 
-			iter++;
-		}
-	}
+            iter++;
+        }
+    }
 }
 
 void QTSqlGen::LoadODBCTables()
 {
-	QStringList tables;
-	SqlProject* sqlProject = GetProject();
-	
-	_tables.clear();
-	_indexes.clear();
+    QStringList tables;
+    SqlProject* sqlProject = GetProject();
 
-	if (sqlProject != NULL)
-	{
-		switch (sqlProject->_odbcDriver)
-		{
-		case eOracle: // QT returns too much, use an explicit query
-			tables = LoadOracleTables();
-			break;
+    _tables.clear();
+    _indexes.clear();
 
-		default: // just use QTs default
-			tables = _db.tables(QSql::Tables);
-			break;
-		}
+    if ( sqlProject != NULL )
+    {
+        switch ( sqlProject->_odbcDriver )
+        {
+        case eOracle: // QT returns too much, use an explicit query
+            tables = LoadOracleTables();
+            break;
 
-		QStringList::const_iterator tableIter = tables.begin();
-		while (tableIter != tables.constEnd())
-		{
-			Table table;
+        default: // just use QTs default
+            tables = _db.tables( QSql::Tables );
+            break;
+        }
 
-			table._type = table.eTable;
-			table._name = *tableIter;
+        QStringList::const_iterator tableIter = tables.begin();
+        while ( tableIter != tables.constEnd() )
+        {
+            Table table;
 
-			_tables.push_back(table);
+            table._type = table.eTable;
+            table._name = *tableIter;
 
-			tableIter++;
-		}
-	}
+            _tables.push_back( table );
 
-	AppendOutput("Tables:");
-	TableIter iter = _tables.begin();
-	while (iter != _tables.end())
-	{
-		QString type = ((*iter)._type == (*iter).eTable) ? "   Table: " : "   Index: ";
-		AppendOutput(type +  (*iter)._name);
-		iter++;
-	}
+            tableIter++;
+        }
+    }
+
+    AppendOutput( "Tables:" );
+    TableIter iter = _tables.begin();
+    while ( iter != _tables.end() )
+    {
+        QString type = ( ( *iter )._type == ( *iter ).eTable ) ? "   Table: " : "   Index: ";
+        AppendOutput( type +  ( *iter )._name );
+        iter++;
+    }
 }
 
 QStringList QTSqlGen::LoadOracleTables()
 {
-	QStringList result;
+    QStringList result;
 
-	if (_db.isOpen())
-	{
-		QSqlQuery query("select * from user_objects where OBJECT_TYPE = 'TABLE'", _db);
-		int fieldNo = query.record().indexOf("OBJECT_NAME");
-		while (query.next()) 
-		{
-			QString tableName = query.value(fieldNo).toString();
-			result.push_back(tableName);
-		}
-	}
+    if ( _db.isOpen() )
+    {
+        QSqlQuery query( "select * from user_objects where OBJECT_TYPE = 'TABLE'", _db );
+        int fieldNo = query.record().indexOf( "OBJECT_NAME" );
+        while ( query.next() )
+        {
+            QString tableName = query.value( fieldNo ).toString();
+            result.push_back( tableName );
+        }
+    }
 
-	return result;
+    return result;
 }
 
 void QTSqlGen::LoadODBCViews()
-{	
-	_views.clear();
+{
+    _views.clear();
 
-	QStringList views;
-	
-	SqlProject* sqlProject = GetProject();
+    QStringList views;
 
-	if (sqlProject != NULL)
-	{
-		switch (sqlProject->_odbcDriver)
-		{
-		case eOracle: // QT returns too much, use an explicit query
-			views = LoadOracleViews();
-			break;
+    SqlProject* sqlProject = GetProject();
 
-		default: // just use QTs default
-			views = _db.tables(QSql::Views);
-			break;
-		}
+    if ( sqlProject != NULL )
+    {
+        switch ( sqlProject->_odbcDriver )
+        {
+        case eOracle: // QT returns too much, use an explicit query
+            views = LoadOracleViews();
+            break;
 
-		QStringList::const_iterator viewIter = views.begin();
-		while (viewIter != views.constEnd())
-		{
-			Table aView;
+        default: // just use QTs default
+            views = _db.tables( QSql::Views );
+            break;
+        }
 
-			aView._type = Table::eView;
-			aView._name = *viewIter;
+        QStringList::const_iterator viewIter = views.begin();
+        while ( viewIter != views.constEnd() )
+        {
+            Table aView;
 
-			_views.push_back(aView);
+            aView._type = Table::eView;
+            aView._name = *viewIter;
 
-			viewIter++;
-		}
-	}
+            _views.push_back( aView );
 
-	AppendOutput("Views:");
-	TableIter iter = _views.begin();
-	while (iter != _views.end())
-	{
-		AppendOutput("   " +  (*iter)._name);
-		iter++;
-	}
+            viewIter++;
+        }
+    }
+
+    AppendOutput( "Views:" );
+    TableIter iter = _views.begin();
+    while ( iter != _views.end() )
+    {
+        AppendOutput( "   " +  ( *iter )._name );
+        iter++;
+    }
 }
 
 QStringList QTSqlGen::LoadOracleViews()
 {
-	QStringList result;
+    QStringList result;
 
-	if (_db.isOpen())
-	{
-		QSqlQuery query("select * from user_objects where OBJECT_TYPE = 'VIEW'", _db);
-		int fieldNo = query.record().indexOf("OBJECT_NAME");
-		while (query.next()) 
-		{
-			QString tableName = query.value(fieldNo).toString();
-			result.push_back(tableName);
-		}
-	}
+    if ( _db.isOpen() )
+    {
+        QSqlQuery query( "select * from user_objects where OBJECT_TYPE = 'VIEW'", _db );
+        int fieldNo = query.record().indexOf( "OBJECT_NAME" );
+        while ( query.next() )
+        {
+            QString tableName = query.value( fieldNo ).toString();
+            result.push_back( tableName );
+        }
+    }
 
-	return result;
+    return result;
 }
 
 void QTSqlGen::LoadODBCViewColumns()
@@ -644,1576 +647,1539 @@ void QTSqlGen::LoadODBCViewColumns()
 
 void QTSqlGen::GenCode
 (
-	Tables& tables, 
-	QString fileName
+        Tables& tables,
+        QString fileName
 )
-{		
-	QFile templateFile;
+{
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/" + fileName + ".h");
-	
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray headerTmpl;
+    templateFile.setFileName( ":/templates/Resources/" + fileName + ".h" );
 
-		headerTmpl = templateFile.readAll();
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray headerTmpl;
 
-		TableIter iter = tables.begin();
-		while (iter != tables.end())
-		{
-			QByteArray header(headerTmpl);
-			QString tableNameDefine = (*iter)._name.toUpper();
+        headerTmpl = templateFile.readAll();
 
-			StandardReplacements(header);
+        TableIter iter = tables.begin();
+        while ( iter != tables.end() )
+        {
+            QByteArray header( headerTmpl );
+            QString tableNameDefine = ( *iter )._name.toUpper();
 
-			header.replace("<%table%>", (*iter)._name.toAscii());
-			header.replace("<%TABLE%>", tableNameDefine.toAscii());
+            StandardReplacements( header );
 
-			QFile headerFile;
-			QString headerFilePath = _targetPath->text() + "/" + (*iter)._name + fileName + ".h";
+            header.replace( "<%table%>", ( *iter )._name.toLatin1() );
+            header.replace( "<%TABLE%>", tableNameDefine.toLatin1() );
 
-			headerFile.setFileName(headerFilePath);
-			if (headerFile.open(QIODevice::WriteOnly))
-			{
-				AddHeaderFile(QString((*iter)._name + fileName + ".h"));
-				headerFile.write(header);
+            QFile headerFile;
+            QString headerFilePath = _targetPath->text() + "/" + ( *iter )._name + fileName + ".h";
 
-				AppendOutput(headerFilePath + " written");
-				headerFile.close();
-			}
+            headerFile.setFileName( headerFilePath );
+            if ( headerFile.open( QIODevice::WriteOnly ) )
+            {
+                AddHeaderFile( QString( ( *iter )._name + fileName + ".h" ) );
+                headerFile.write( header );
 
-			templateFile.close();
-			
-			GenRecordHeader(*iter);
-			GenSelectionHeader(*iter);
+                AppendOutput( headerFilePath + " written" );
+                headerFile.close();
+            }
 
-			iter++;
-		}
+            templateFile.close();
 
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
+            GenRecordHeader( *iter );
+            GenSelectionHeader( *iter );
 
-    templateFile.setFileName(":/templates/Resources/" + fileName + ".cpp");
+            iter++;
+        }
 
-	if (templateFile.open(QIODevice::ReadOnly))
-	{		
-		QByteArray sourceTmpl;
+        templateFile.close();
+    }
+    else
+    {
+        QFile::FileError fileError = templateFile.error();
 
-		sourceTmpl = templateFile.readAll();
+        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+    }
 
-		TableIter iter = tables.begin();
-		while (iter != tables.end())
-		{
-			QByteArray sourceText(sourceTmpl);
-			QString tableNameDefine = (*iter)._name.toUpper();
+    templateFile.setFileName( ":/templates/Resources/" + fileName + ".cpp" );
 
-			StandardReplacements(sourceText);
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray sourceTmpl;
 
-			sourceText.replace("<%table%>", (*iter)._name.toAscii());
-			sourceText.replace("<%TABLE%>", tableNameDefine.toAscii());
+        sourceTmpl = templateFile.readAll();
 
-			QString createStatement((*iter)._createStatement);
-			createStatement.replace("\"", ""); 
-			createStatement.replace("\n", " ");
-			createStatement.replace("\r", " ");
-			createStatement.replace("  ", " ");
-			sourceText.replace("<%createStmt%>", createStatement.toAscii());
+        TableIter iter = tables.begin();
+        while ( iter != tables.end() )
+        {
+            QByteArray sourceText( sourceTmpl );
+            QString tableNameDefine = ( *iter )._name.toUpper();
 
-			QFile cppFile;
-			QString cppFilePath = _targetPath->text() + "/" + (*iter)._name + fileName + ".cpp";
+            StandardReplacements( sourceText );
 
-			cppFile.setFileName(cppFilePath);
-			if (cppFile.open(QIODevice::WriteOnly))
-			{
-				AddSourceFile((*iter)._name + fileName + ".cpp");
-				cppFile.write(sourceText);
+            sourceText.replace( "<%table%>", ( *iter )._name.toLatin1() );
+            sourceText.replace( "<%TABLE%>", tableNameDefine.toLatin1() );
 
-				AppendOutput(cppFilePath + " written");
-				cppFile.close();
-			}
-			
-			GenRecordSource(*iter);
-			GenSelectionSource(*iter);
+            QString createStatement( ( *iter )._createStatement );
+            createStatement.replace( "\"", "" );
+            createStatement.replace( "\n", " " );
+            createStatement.replace( "\r", " " );
+            createStatement.replace( "  ", " " );
+            sourceText.replace( "<%createStmt%>", createStatement.toLatin1() );
 
-			iter++;
-		}
-		
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
+            QFile cppFile;
+            QString cppFilePath = _targetPath->text() + "/" + ( *iter )._name + fileName + ".cpp";
+
+            cppFile.setFileName( cppFilePath );
+            if ( cppFile.open( QIODevice::WriteOnly ) )
+            {
+                AddSourceFile( ( *iter )._name + fileName + ".cpp" );
+                cppFile.write( sourceText );
+
+                AppendOutput( cppFilePath + " written" );
+                cppFile.close();
+            }
+
+            GenRecordSource( *iter );
+            GenSelectionSource( *iter );
+
+            iter++;
+        }
+
+        templateFile.close();
+    }
+    else
+    {
+        QFile::FileError fileError = templateFile.error();
+
+        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+    }
 }
 
 QString QTSqlGen::GenerateFieldType
 (
-	const QString& columnName,
-	const QString& name, 
-	Column::Type type
+        const QString& columnName,
+        const QString& name,
+        Column::Type type
 )
-{	
-	QString result;
-	QString uName = name.mid(0, 1).toUpper() + name.mid(1);
+{
+    QString result;
+    QString uName = name.mid( 0, 1 ).toUpper() + name.mid( 1 );
 
-	QFile templateFile;
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/fieldType");
-	if (templateFile.open(QIODevice::ReadOnly))
-	{	
-		QByteArray fieldTypeTemplate;
-		QByteArray fieldType;
+    templateFile.setFileName( ":/templates/Resources/fieldType" );
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray fieldTypeTemplate;
+        QByteArray fieldType;
 
-		switch (type)
-		{
-		case Column::eText:
-			fieldType = "eString";
-			break;
+        switch ( type )
+        {
+        case Column::eText:
+            fieldType = "eString";
+            break;
 
-		case Column::eBytes:
-			fieldType = "eBytes";
-			break;
+        case Column::eBytes:
+            fieldType = "eBytes";
+            break;
 
-		case Column::eInt:
-			fieldType = "eInteger";
-			break;
+        case Column::eInt:
+            fieldType = "eInteger";
+            break;
 
-		case Column::eUInt:
-			fieldType = "eInteger";
-			break;
+        case Column::eUInt:
+            fieldType = "eInteger";
+            break;
 
-		case Column::eReal:
-			fieldType = "eReal";
-			break;
+        case Column::eReal:
+            fieldType = "eReal";
+            break;
 
-		case Column::eDate:
-			fieldType = "eDate";
-			break;
+        case Column::eDate:
+            fieldType = "eDate";
+            break;
 
-		case Column::eTime:
-			fieldType = "eTime";
-			break;
+        case Column::eTime:
+            fieldType = "eTime";
+            break;
 
-		case Column::eDateTime:
-			fieldType = "eDateTime";
-			break;
+        case Column::eDateTime:
+            fieldType = "eDateTime";
+            break;
 
-		case Column::eGuid:
-			fieldType = "eQUuid";
-			break;
+        case Column::eGuid:
+            fieldType = "eQUuid";
+            break;
 
-		case Column::eBoolean:
-			fieldType = "eBool";
-			break;
-		}
+        case Column::eBoolean:
+            fieldType = "eBool";
+            break;
+        }
 
-		fieldTypeTemplate = templateFile.readAll();
+        fieldTypeTemplate = templateFile.readAll();
 
-		fieldTypeTemplate.replace("<%fieldType%>", fieldType);
-		fieldTypeTemplate.replace("<%uName%>", uName.toAscii());
-		fieldTypeTemplate.replace("<%name%>", columnName.toAscii());
+        fieldTypeTemplate.replace( "<%fieldType%>", fieldType );
+        fieldTypeTemplate.replace( "<%uName%>", uName.toLatin1() );
+        fieldTypeTemplate.replace( "<%name%>", columnName.toLatin1() );
 
-		StandardReplacements(fieldTypeTemplate);
+        StandardReplacements( fieldTypeTemplate );
 
-		result = QString(fieldTypeTemplate);
-		result += "\n";
-	}
+        result = QString( fieldTypeTemplate );
+        result += "\n";
+    }
 
-	return result;
+    return result;
 }
 
 QString QTSqlGen::GenerateSelector
 (
-	const QString& name, 
-	const Column::Type type
+        const QString& name,
+        const Column::Type type
 )
 {
-	QString lName(name);
-	lName.replace("_", "");
-	lName[0] = QChar(lName[0]).toLower();
+    QString lName( name );
+    lName.replace( "_", "" );
+    lName[0] = QChar( lName[0] ).toLower();
 
-	QString uName(name);
-	uName.replace("_", "");
-	uName[0] = QChar(uName[0]).toUpper();
+    QString uName( name );
+    uName.replace( "_", "" );
+    uName[0] = QChar( uName[0] ).toUpper();
 
-	QByteArray accessor;
+    QByteArray accessor;
 
-	QFile templateFile;
+    QFile templateFile;
 
-	switch (type)
-	{
-	case Column::eText:
-		templateFile.setFileName(":/templates/Resources/SelectorString");
-		break;
+    switch ( type )
+    {
+    case Column::eText:
+        templateFile.setFileName( ":/templates/Resources/SelectorString" );
+        break;
 
-	case Column::eBytes:
-		templateFile.setFileName(":/templates/Resources/SelectorBytes");
-		break;
+    case Column::eBytes:
+        templateFile.setFileName( ":/templates/Resources/SelectorBytes" );
+        break;
 
-	case Column::eDateTime:
-		templateFile.setFileName(":/templates/Resources/SelectorDateTime");
-		break;		
-				
-	case Column::eDate:	
-		templateFile.setFileName(":/templates/Resources/SelectorDate");
-		break;		
+    case Column::eDateTime:
+        templateFile.setFileName( ":/templates/Resources/SelectorDateTime" );
+        break;
 
-	case Column::eTime:
-		templateFile.setFileName(":/templates/Resources/SelectorTime");
-		break;		
+    case Column::eDate:
+        templateFile.setFileName( ":/templates/Resources/SelectorDate" );
+        break;
 
-	case Column::eReal:
-		templateFile.setFileName(":/templates/Resources/SelectorReal");
-		break;
+    case Column::eTime:
+        templateFile.setFileName( ":/templates/Resources/SelectorTime" );
+        break;
 
-	case Column::eInt:
-		templateFile.setFileName(":/templates/Resources/SelectorInt");
-		break;
+    case Column::eReal:
+        templateFile.setFileName( ":/templates/Resources/SelectorReal" );
+        break;
 
-	case Column::eGuid:
-		templateFile.setFileName(":/templates/Resources/SelectorGUID");
-		break;
+    case Column::eInt:
+        templateFile.setFileName( ":/templates/Resources/SelectorInt" );
+        break;
 
-	case Column::eBoolean:
-		templateFile.setFileName(":/templates/Resources/SelectorBoolean");
-		break;
-	}
+    case Column::eGuid:
+        templateFile.setFileName( ":/templates/Resources/SelectorGUID" );
+        break;
 
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		accessor = templateFile.readAll();
+    case Column::eBoolean:
+        templateFile.setFileName( ":/templates/Resources/SelectorBoolean" );
+        break;
+    }
 
-		accessor.replace(QByteArray("<%uName%>"), uName.toAscii());
-		accessor.replace(QByteArray("<%lName%>"), lName.toAscii());
-		accessor.replace(QByteArray("<%name%>"), name.toAscii());
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        accessor = templateFile.readAll();
 
-		StandardReplacements(accessor);
-	}
+        accessor.replace( QByteArray( "<%uName%>" ), uName.toLatin1() );
+        accessor.replace( QByteArray( "<%lName%>" ), lName.toLatin1() );
+        accessor.replace( QByteArray( "<%name%>" ), name.toLatin1() );
 
-	return QString(accessor);
+        StandardReplacements( accessor );
+    }
+
+    return QString( accessor );
 }
 
 void QTSqlGen::GenRecordHeader
 (
-	Table& table
+        Table& table
 )
 {
-	QFile templateFile;
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/Record.h");
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray header;
-		QString fieldEnums;
-		QString accessors;
+    templateFile.setFileName( ":/templates/Resources/Record.h" );
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray header;
+        QString fieldEnums;
+        QString accessors;
 
-		QString TABLENAME = table._name.toUpper();
-		QString tableName = table._name;
+        QString TABLENAME = table._name.toUpper();
+        QString tableName = table._name;
 
-		ColumnIter column = table._columns.begin();
-		while (column != table._columns.end())
-		{
-			QString type;
-			QString name = (*column)._name;
+        ColumnIter column = table._columns.begin();
+        while ( column != table._columns.end() )
+        {
+            QString type;
+            QString name = ( *column )._name;
 
-			name.replace("_", "");
+            name.replace( "_", "" );
 
-			QString lName = name.mid(0, 1).toLower() + name.mid(1);
-			QString uName = name.mid(0, 1).toUpper() + name.mid(1);
+            QString lName = name.mid( 0, 1 ).toLower() + name.mid( 1 );
+            QString uName = name.mid( 0, 1 ).toUpper() + name.mid( 1 );
 
-			if (column != table._columns.begin())
-			{
-				fieldEnums.append(",\n");
-				accessors.append("\n");
-			}
+            if ( column != table._columns.begin() )
+            {
+                fieldEnums.append( ",\n" );
+                accessors.append( "\n" );
+            }
 
-			fieldEnums.append("\t\tf_" + uName);
+            fieldEnums.append( "\t\tf_" + uName );
 
-			switch ((*column)._type)
-			{
-			case Column::eText:
-				accessors += GenerateAccessor(name, QString("const QString&"));
-				break;
+            switch ( ( *column )._type )
+            {
+            case Column::eText:
+                accessors += GenerateAccessor( name, QString( "const QString&" ) );
+                break;
 
-			case Column::eBytes:
-				accessors += GenerateAccessor(name, QString("const QByteArray&"));
-				break;
+            case Column::eBytes:
+                accessors += GenerateAccessor( name, QString( "const QByteArray&" ) );
+                break;
 
-			case Column::eDateTime:
-				accessors += GenerateAccessor(name, QString("const QDateTime&"));
-				break;
+            case Column::eDateTime:
+                accessors += GenerateAccessor( name, QString( "const QDateTime&" ) );
+                break;
 
-			case Column::eDate:
-				accessors += GenerateAccessor(name, QString("const QDate&"));
-				break;
+            case Column::eDate:
+                accessors += GenerateAccessor( name, QString( "const QDate&" ) );
+                break;
 
-			case Column::eTime:
-				accessors += GenerateAccessor(name, QString("const QTime&"));
-				break;
+            case Column::eTime:
+                accessors += GenerateAccessor( name, QString( "const QTime&" ) );
+                break;
 
-			case Column::eInt:
-				accessors += GenerateAccessor(name, QString("quint32"));
-				break;
+            case Column::eInt:
+                accessors += GenerateAccessor( name, QString( "quint32" ) );
+                break;
 
             case Column::eGuid:
-				accessors += GenerateAccessor(name, QString("const QUuid&"));
-				break;
+                accessors += GenerateAccessor( name, QString( "const QUuid&" ) );
+                break;
 
             case Column::eReal:
-				accessors += GenerateAccessor(name, QString("qreal"));
-				break;
+                accessors += GenerateAccessor( name, QString( "qreal" ) );
+                break;
 
-			case Column::eBoolean:
-				accessors += GenerateAccessor(name, QString("bool"));
-				break;
+            case Column::eBoolean:
+                accessors += GenerateAccessor( name, QString( "bool" ) );
+                break;
 
-			default:
-				AppendOutput("Unknown Type Error Table:" + table._name + " Column:" + (*column)._name);
-				break;
-			}
+            default:
+                AppendOutput( "Unknown Type Error Table:" + table._name + " Column:" + ( *column )._name );
+                break;
+            }
 
-			column++;
-		}
+            column++;
+        }
 
-		header = templateFile.readAll();
+        header = templateFile.readAll();
 
-		StandardReplacements(header);
+        StandardReplacements( header );
 
-		header.replace("<%table%>", tableName.toAscii());
-		header.replace("<%TABLE%>", TABLENAME.toAscii());
-		header.replace("<%fieldEnum%>", fieldEnums.toAscii());
-		header.replace("<%accessors%>", accessors.toAscii());
-		
-		QString headerFilePath = _targetPath->text() + "/" + table._name + "Record.h";
-		QFile headerFile;
+        header.replace( "<%table%>", tableName.toLatin1() );
+        header.replace( "<%TABLE%>", TABLENAME.toLatin1() );
+        header.replace( "<%fieldEnum%>", fieldEnums.toLatin1() );
+        header.replace( "<%accessors%>", accessors.toLatin1() );
 
-		headerFile.setFileName(headerFilePath);
-		if (headerFile.open(QIODevice::WriteOnly))
-		{
-			AddHeaderFile(QString(table._name + "Record.h"));
+        QString headerFilePath = _targetPath->text() + "/" + table._name + "Record.h";
+        QFile headerFile;
 
-			headerFile.write(header);
-		
-			AppendOutput(headerFilePath + " written");
-			headerFile.close();
-		}
-		else
-		{
-			AppendOutput("Error opening: " + headerFilePath);
-		}
-		
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
+        headerFile.setFileName( headerFilePath );
+        if ( headerFile.open( QIODevice::WriteOnly ) )
+        {
+            AddHeaderFile( QString( table._name + "Record.h" ) );
+
+            headerFile.write( header );
+
+            AppendOutput( headerFilePath + " written" );
+            headerFile.close();
+        }
+        else
+        {
+            AppendOutput( "Error opening: " + headerFilePath );
+        }
+
+        templateFile.close();
+    }
+    else
+    {
+        QFile::FileError fileError = templateFile.error();
+
+        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+    }
 }
 
 void QTSqlGen::GenRecordSource
 (
-	Table& table
+        Table& table
 )
 {
-	QFile templateFile;
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/Record.cpp");
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray cpp;
-		QString fields;
-		QString binds;
-		QString accessors;
-		QString propertyDataTypes;
+    templateFile.setFileName( ":/templates/Resources/Record.cpp" );
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray cpp;
+        QString fields;
+        QString binds;
+        QString accessors;
+        QString propertyDataTypes;
 
-		QString tableName = table._name;
+        QString tableName = table._name;
 
-		ColumnIter column = table._columns.begin();
-		while (column != table._columns.end())
-		{
-			QString type;
-			QString name = (*column)._name;
+        ColumnIter column = table._columns.begin();
+        while ( column != table._columns.end() )
+        {
+            QString type;
+            QString name = ( *column )._name;
 
-			name.replace("_", "");
+            name.replace( "_", "" );
 
-			QString lName = name.mid(0, 1).toLower() + name.mid(1);
-			QString uName = name.mid(0, 1).toUpper() + name.mid(1);
+            QString lName = name.mid( 0, 1 ).toLower() + name.mid( 1 );
+            QString uName = name.mid( 0, 1 ).toUpper() + name.mid( 1 );
 
-			if (column != table._columns.begin())
-			{
-				if (fields.size())
-				{
-					fields.append(", ");
-					binds.append(", ");
-				}
-			}
+            if ( column != table._columns.begin() )
+            {
+                if ( fields.size() )
+                {
+                    fields.append( ", " );
+                    binds.append( ", " );
+                }
+            }
 
-			if ((*column)._name != "_id" && (*column)._name != "ID")
-			{
-				fields.append((*column)._name);
-				binds.append(":" + (*column)._name);
-			}
+            if ( ( *column )._name != "_id" && ( *column )._name != "ID" )
+            {
+                fields.append( ( *column )._name );
+                binds.append( ":" + ( *column )._name );
+            }
 
-			propertyDataTypes.append(GenerateFieldType((*column)._name, lName, (*column)._type));
-			accessors.append(GenerateAccessorSource(tableName, lName, (*column)._type));
+            propertyDataTypes.append( GenerateFieldType( ( *column )._name, lName, ( *column )._type ) );
+            accessors.append( GenerateAccessorSource( tableName, lName, ( *column )._type ) );
 
-			column++;
-		}
+            column++;
+        }
 
-		cpp = templateFile.readAll();
+        cpp = templateFile.readAll();
 
-		StandardReplacements(cpp);
+        StandardReplacements( cpp );
 
-		cpp.replace("<%table%>", tableName.toAscii());
-		cpp.replace("<%fields%>", fields.toAscii());
-		cpp.replace("<%binds%>", binds.toAscii());
-		cpp.replace("<%accessors%>", accessors.toAscii());
-		cpp.replace("<%fieldCount%>", QByteArray::number(table._columns.size()));
+        cpp.replace( "<%table%>", tableName.toLatin1() );
+        cpp.replace( "<%fields%>", fields.toLatin1() );
+        cpp.replace( "<%binds%>", binds.toLatin1() );
+        cpp.replace( "<%accessors%>", accessors.toLatin1() );
+        cpp.replace( "<%fieldCount%>", QByteArray::number( table._columns.size() ) );
 
-		cpp.replace("<%propertyDataTypes%>", propertyDataTypes.toAscii());
-		
-		QString cppFilePath = _targetPath->text() + "/" + table._name + "Record.cpp";
-		QFile cppFile;
+        cpp.replace( "<%propertyDataTypes%>", propertyDataTypes.toLatin1() );
 
-		cppFile.setFileName(cppFilePath);
-		if (cppFile.open(QIODevice::WriteOnly))
-		{
-			AddSourceFile(table._name + "Record.cpp");
-			cppFile.write(cpp);
+        QString cppFilePath = _targetPath->text() + "/" + table._name + "Record.cpp";
+        QFile cppFile;
 
-			AppendOutput(cppFilePath + " written");
-			cppFile.close();
-		}
-		else
-		{
-			AppendOutput("Error opening: " + cppFilePath);
-		}
+        cppFile.setFileName( cppFilePath );
+        if ( cppFile.open( QIODevice::WriteOnly ) )
+        {
+            AddSourceFile( table._name + "Record.cpp" );
+            cppFile.write( cpp );
 
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
+            AppendOutput( cppFilePath + " written" );
+            cppFile.close();
+        }
+        else
+        {
+            AppendOutput( "Error opening: " + cppFilePath );
+        }
+
+        templateFile.close();
+    }
+    else
+    {
+        QFile::FileError fileError = templateFile.error();
+
+        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+    }
 }
 
 // todo
 void QTSqlGen::GenSelectionHeader
 (
-	Table& table
+        Table& table
 )
 {
-	QFile templateFile;
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/SelectionCriteria.h");
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray header;
-		QString accessors;
+    templateFile.setFileName( ":/templates/Resources/SelectionCriteria.h" );
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray header;
+        QString accessors;
 
-		QString TABLENAME = table._name.toUpper();
-		QString tableName = table._name;
+        QString TABLENAME = table._name.toUpper();
+        QString tableName = table._name;
 
-		ColumnIter column = table._columns.begin();
-		while (column != table._columns.end())
-		{
-            accessors.append(GenerateSelector((*column)._name, (*column)._type));
+        ColumnIter column = table._columns.begin();
+        while ( column != table._columns.end() )
+        {
+            accessors.append( GenerateSelector( ( *column )._name, ( *column )._type ) );
 
-			column++;
-		}
+            column++;
+        }
 
-		header = templateFile.readAll();
+        header = templateFile.readAll();
 
-		StandardReplacements(header);
+        StandardReplacements( header );
 
-		header.replace("<%table%>", tableName.toAscii());
-		header.replace("<%TABLE%>", TABLENAME.toAscii());
-		header.replace("<%accessors%>", accessors.toAscii());
-		
-		QString headerFilePath = _targetPath->text() + "/" + table._name + "SelectionCriteria.h";
-		QFile headerFile;
+        header.replace( "<%table%>", tableName.toLatin1() );
+        header.replace( "<%TABLE%>", TABLENAME.toLatin1() );
+        header.replace( "<%accessors%>", accessors.toLatin1() );
 
-		headerFile.setFileName(headerFilePath);
-		if (headerFile.open(QIODevice::WriteOnly))
-		{
-			AddHeaderFile(QString(table._name + "SelectionCriteria.h"));
+        QString headerFilePath = _targetPath->text() + "/" + table._name + "SelectionCriteria.h";
+        QFile headerFile;
 
-			headerFile.write(header);
-		
-			AppendOutput(headerFilePath + " written");
-			headerFile.close();
-		}
-		else
-		{
-			AppendOutput("Error opening: " + headerFilePath);
-		}
-		
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
+        headerFile.setFileName( headerFilePath );
+        if ( headerFile.open( QIODevice::WriteOnly ) )
+        {
+            AddHeaderFile( QString( table._name + "SelectionCriteria.h" ) );
+
+            headerFile.write( header );
+
+            AppendOutput( headerFilePath + " written" );
+            headerFile.close();
+        }
+        else
+        {
+            AppendOutput( "Error opening: " + headerFilePath );
+        }
+
+        templateFile.close();
+    }
+    else
+    {
+        QFile::FileError fileError = templateFile.error();
+
+        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+    }
 }
 
 void QTSqlGen::GenSelectionSource
 (
-	Table& table
+        Table& table
 )
 {
-	QFile templateFile;
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/SelectionCriteria.cpp");
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray cpp;
-		QString tableName = table._name;
+    templateFile.setFileName( ":/templates/Resources/SelectionCriteria.cpp" );
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray cpp;
+        QString tableName = table._name;
 
-		cpp = templateFile.readAll();
+        cpp = templateFile.readAll();
 
-		StandardReplacements(cpp);
+        StandardReplacements( cpp );
 
-		cpp.replace("<%table%>", tableName.toAscii());
+        cpp.replace( "<%table%>", tableName.toLatin1() );
 
-		QString cppFilePath = _targetPath->text() + "/" + table._name + "SelectionCriteria.cpp";
-		QFile cppFile;
+        QString cppFilePath = _targetPath->text() + "/" + table._name + "SelectionCriteria.cpp";
+        QFile cppFile;
 
-		cppFile.setFileName(cppFilePath);
-		if (cppFile.open(QIODevice::WriteOnly))
-		{
-			AddSourceFile(table._name + "SelectionCriteria.cpp");
-			cppFile.write(cpp);
+        cppFile.setFileName( cppFilePath );
+        if ( cppFile.open( QIODevice::WriteOnly ) )
+        {
+            AddSourceFile( table._name + "SelectionCriteria.cpp" );
+            cppFile.write( cpp );
 
-			AppendOutput(cppFilePath + " written");
-			cppFile.close();
-		}
-		else
-		{
-			AppendOutput("Error opening: " + cppFilePath);
-		}
+            AppendOutput( cppFilePath + " written" );
+            cppFile.close();
+        }
+        else
+        {
+            AppendOutput( "Error opening: " + cppFilePath );
+        }
 
-		templateFile.close();
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
+        templateFile.close();
+    }
+    else
+    {
+        QFile::FileError fileError = templateFile.error();
+
+        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+    }
 }
 
 QString QTSqlGen::GenerateAccessor
 (
-	const QString& name, 
-	const QString& type
+        const QString& name,
+        const QString& type
 )
 {
-	QString lName(name);
-	lName.replace("_", "");
-	lName[0] = QChar(lName[0]).toLower();
+    QString lName( name );
+    lName.replace( "_", "" );
+    lName[0] = QChar( lName[0] ).toLower();
 
-	QString uName(name);
-	uName.replace("_", "");
-	uName[0] = QChar(uName[0]).toUpper();
+    QString uName( name );
+    uName.replace( "_", "" );
+    uName[0] = QChar( uName[0] ).toUpper();
 
-	QString inType(type);
-	QString outType(type);
+    QString inType( type );
+    QString outType( type );
 
-	QByteArray accessor;
+    QByteArray accessor;
 
-	QFile templateFile;
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/Accessor");
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		accessor = templateFile.readAll();
+    templateFile.setFileName( ":/templates/Resources/Accessor" );
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        accessor = templateFile.readAll();
 
-		outType.replace(QString("&"), QString(""));
-		outType.replace(QString("const "), QString(""));
+        outType.replace( QString( "&" ), QString( "" ) );
+        outType.replace( QString( "const " ), QString( "" ) );
 
-		accessor.replace(QByteArray("<%uName%>"), uName.toAscii());
-		accessor.replace(QByteArray("<%inType%>"), inType.toAscii());
-		accessor.replace(QByteArray("<%name%>"), lName.toAscii());
-		accessor.replace(QByteArray("<%outType%>"), outType.toAscii());
+        accessor.replace( QByteArray( "<%uName%>" ), uName.toLatin1() );
+        accessor.replace( QByteArray( "<%inType%>" ), inType.toLatin1() );
+        accessor.replace( QByteArray( "<%name%>" ), lName.toLatin1() );
+        accessor.replace( QByteArray( "<%outType%>" ), outType.toLatin1() );
 
-		StandardReplacements(accessor);
-	}
+        StandardReplacements( accessor );
+    }
 
-	return QString(accessor);
+    return QString( accessor );
 }
 
 QString QTSqlGen::GenerateAccessorSource
 (
-	const QString& tableName, 
-	const QString& name, 
-	const Column::Type type
+        const QString& tableName,
+        const QString& name,
+        const Column::Type type
 )
-{	
-	QString lName(name);
-	lName.replace("_", "");
-	lName[0] = QChar(lName[0]).toLower();
+{
+    QString lName( name );
+    lName.replace( "_", "" );
+    lName[0] = QChar( lName[0] ).toLower();
 
-	QString uName(name);
-	uName.replace("_", "");
-	uName[0] = QChar(uName[0]).toUpper();
+    QString uName( name );
+    uName.replace( "_", "" );
+    uName[0] = QChar( uName[0] ).toUpper();
 
-	QByteArray accessor;
+    QByteArray accessor;
 
-	QFile templateFile;
+    QFile templateFile;
 
 
-	switch (type)
-	{
-	case Column::eText:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceString");
-		break;
+    switch ( type )
+    {
+    case Column::eText:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceString" );
+        break;
 
-	case Column::eBytes:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceBytes");
-		break;
+    case Column::eBytes:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceBytes" );
+        break;
 
-	case Column::eDateTime:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceDateTime");
-		break;		
-				
-	case Column::eDate:	
-		templateFile.setFileName(":/templates/Resources/AccessorSourceDate");
-		break;		
+    case Column::eDateTime:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceDateTime" );
+        break;
 
-	case Column::eTime:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceTime");
-		break;		
+    case Column::eDate:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceDate" );
+        break;
 
-	case Column::eReal:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceReal");
-		break;
+    case Column::eTime:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceTime" );
+        break;
 
-	case Column::eInt:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceInt");
-		break;
+    case Column::eReal:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceReal" );
+        break;
 
-	case Column::eGuid:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceGUID");
-		break;
+    case Column::eInt:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceInt" );
+        break;
 
-	case Column::eBoolean:
-		templateFile.setFileName(":/templates/Resources/AccessorSourceBoolean");
-		break;
-	}
+    case Column::eGuid:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceGUID" );
+        break;
 
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		accessor = templateFile.readAll();
+    case Column::eBoolean:
+        templateFile.setFileName( ":/templates/Resources/AccessorSourceBoolean" );
+        break;
+    }
 
-		accessor.replace(QByteArray("<%uName%>"), uName.toAscii());
-		accessor.replace(QByteArray("<%tableName%>"), tableName.toAscii());
-		accessor.replace(QByteArray("<%name%>"), lName.toAscii());
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        accessor = templateFile.readAll();
 
-		StandardReplacements(accessor);
-	}
+        accessor.replace( QByteArray( "<%uName%>" ), uName.toLatin1() );
+        accessor.replace( QByteArray( "<%tableName%>" ), tableName.toLatin1() );
+        accessor.replace( QByteArray( "<%name%>" ), lName.toLatin1() );
 
-	return QString(accessor);
+        StandardReplacements( accessor );
+    }
+
+    return QString( accessor );
 }
 
 QString QTSqlGen::GenerateTableRoutine
 (
-	const Table& table
+        const Table& table
 )
 {
-	QByteArray tableRoutine;
-	QString type(table._type == Table::eTable ? "Table" : "View");
-	QString tableName(table._name + type);
-	QString variableName(table._name);
+    QByteArray tableRoutine;
+    QString type( table._type == Table::eTable ? "Table" : "View" );
+    QString tableName( table._name + type );
+    QString variableName( table._name );
 
-	variableName[0] = QChar(variableName[0]).toLower();
-	variableName += type;
+    variableName[0] = QChar( variableName[0] ).toLower();
+    variableName += type;
 
-	QFile templateFile;
+    QFile templateFile;
 
-	templateFile.setFileName(":/templates/Resources/TableRoutine");
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		tableRoutine = templateFile.readAll();
+    templateFile.setFileName( ":/templates/Resources/TableRoutine" );
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        tableRoutine = templateFile.readAll();
 
-		StandardReplacements(tableRoutine);
-		
-		tableRoutine.replace("<%tableName%>", tableName.toAscii());
-		tableRoutine.replace("<%variableName%>", variableName.toAscii());
+        StandardReplacements( tableRoutine );
 
-	}
+        tableRoutine.replace( "<%tableName%>", tableName.toLatin1() );
+        tableRoutine.replace( "<%variableName%>", variableName.toLatin1() );
 
-	return tableRoutine;
+    }
+
+    return tableRoutine;
 }
 
 void QTSqlGen::WriteStaticFiles()
 {
-	SqlProject* currentProject = GetProject();
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
+    if ( currentProject != NULL )
+    {
 
-		QStringList staticFiles;
-		QStringList::iterator staticFile;
+        QStringList staticFiles;
+        QStringList::iterator staticFile;
 
-		staticFiles << ":/templates/Resources/RecordBase.h" 
-			<< ":/templates/Resources/RecordBase.cpp";
+        staticFiles << ":/templates/Resources/RecordBase.h"
+                << ":/templates/Resources/RecordBase.cpp";
 
-		if (currentProject->_writeProject == true)
-			staticFiles	<< ":/templates/Resources/CreateVCProj.bat";
+        if ( currentProject->_writeProject == true )
+            staticFiles << ":/templates/Resources/CreateVCProj.bat";
 
-		staticFile = staticFiles.begin();
-		while (staticFile != staticFiles.end())
-		{	
-			QFile templateFile;
+        staticFile = staticFiles.begin();
+        while ( staticFile != staticFiles.end() )
+        {
+            QFile templateFile;
 
-			templateFile.setFileName(*staticFile);
-			if (templateFile.open(QIODevice::ReadOnly))
-			{
-				QByteArray templateStr = templateFile.readAll();
+            templateFile.setFileName( *staticFile );
+            if ( templateFile.open( QIODevice::ReadOnly ) )
+            {
+                QByteArray templateStr = templateFile.readAll();
 
-				QStringList parts = (*staticFile).split("/", QString::SkipEmptyParts);
+                QStringList parts = ( *staticFile ).split( "/", QString::SkipEmptyParts );
 
-				QString srcFilePath = _targetPath->text() + "/" + parts.last();
-				QFile srcFile;
+                QString srcFilePath = _targetPath->text() + "/" + parts.last();
+                QFile srcFile;
 
-				srcFile.setFileName(srcFilePath);
-				if (srcFile.open(QIODevice::WriteOnly))
-				{
-					if (parts.last().indexOf(".h") > -1)
-						AddHeaderFile(parts.last());
-					else if (parts.last().indexOf(".cpp") > -1)
-						AddSourceFile(parts.last());
+                srcFile.setFileName( srcFilePath );
+                if ( srcFile.open( QIODevice::WriteOnly ) )
+                {
+                    if ( parts.last().indexOf( ".h" ) > -1 )
+                        AddHeaderFile( parts.last() );
+                    else if ( parts.last().indexOf( ".cpp" ) > -1 )
+                        AddSourceFile( parts.last() );
 
-					StandardReplacements(templateStr);
+                    StandardReplacements( templateStr );
 
-					srcFile.write(templateStr);
+                    srcFile.write( templateStr );
 
-					AppendOutput(srcFilePath + " written");
-					srcFile.close();
-				}
-				else
-				{
-					AppendOutput("Error opening: " + srcFilePath);
-				}
+                    AppendOutput( srcFilePath + " written" );
+                    srcFile.close();
+                }
+                else
+                {
+                    AppendOutput( "Error opening: " + srcFilePath );
+                }
 
-				templateFile.close();
-			}
-			else
-			{
-				QFile::FileError fileError = templateFile.error();
-				
-				AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-			}
-			staticFile++;
-		}
-	}
+                templateFile.close();
+            }
+            else
+            {
+                QFile::FileError fileError = templateFile.error();
+
+                AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+            }
+            staticFile++;
+        }
+    }
 }
 
 void QTSqlGen::WriteHeaderFile()
 {
-	QFile templateFile;
-	QFile srcFile;
+    QFile templateFile;
+    QFile srcFile;
 
-	templateFile.setFileName(":/templates/Resources/Header");
+    templateFile.setFileName( ":/templates/Resources/Header" );
 
-	if (templateFile.open(QIODevice::ReadOnly))
-	{
-		QByteArray templateStr = templateFile.readAll();
+    if ( templateFile.open( QIODevice::ReadOnly ) )
+    {
+        QByteArray templateStr = templateFile.readAll();
 
-		QString srcFilePath = _targetPath->text() + "/" + _productName + "DB.h";
+        QString srcFilePath = _targetPath->text() + "/" + _productName + "DB.h";
 
-		srcFile.setFileName(srcFilePath);
-		if (srcFile.open(QIODevice::WriteOnly))
-		{
-			StandardReplacements(templateStr);
+        srcFile.setFileName( srcFilePath );
+        if ( srcFile.open( QIODevice::WriteOnly ) )
+        {
+            StandardReplacements( templateStr );
 
-			srcFile.write(templateStr);
+            srcFile.write( templateStr );
 
-			AppendOutput(srcFilePath + " written");
-			srcFile.close();
-		}
-		else
-		{
-			AppendOutput("Error opening: " + srcFilePath);
-		}
-	}
-	else
-	{
-		QFile::FileError fileError = templateFile.error();
-		
-		AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-	}
+            AppendOutput( srcFilePath + " written" );
+            srcFile.close();
+        }
+        else
+        {
+            AppendOutput( "Error opening: " + srcFilePath );
+        }
+    }
+    else
+    {
+        QFile::FileError fileError = templateFile.error();
+
+        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+    }
 }
 
 void QTSqlGen::WriteExportHeaderFile()
 {
-	SqlProject* currentProject = GetProject();
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		QFile templateFile;
-		QFile srcFile;
+    if ( currentProject != NULL )
+    {
+        QFile templateFile;
+        QFile srcFile;
 
-		templateFile.setFileName(":/templates/Resources/Header2");
+        templateFile.setFileName( ":/templates/Resources/Header2" );
 
-		if (templateFile.open(QIODevice::ReadOnly))
-		{
-			QByteArray templateStr = templateFile.readAll();
+        if ( templateFile.open( QIODevice::ReadOnly ) )
+        {
+            QByteArray templateStr = templateFile.readAll();
 
-			QString srcFilePath = _targetPath->text() + "/" + _productInclude;
+            QString srcFilePath = _targetPath->text() + "/" + _productInclude;
 
-			srcFile.setFileName(srcFilePath);
-			if (srcFile.open(QIODevice::WriteOnly))
-			{
-				StandardReplacements(templateStr);
+            srcFile.setFileName( srcFilePath );
+            if ( srcFile.open( QIODevice::WriteOnly ) )
+            {
+                StandardReplacements( templateStr );
 
-				srcFile.write(templateStr);
+                srcFile.write( templateStr );
 
-				AppendOutput(srcFilePath + " written");
-				srcFile.close();
+                AppendOutput( srcFilePath + " written" );
+                srcFile.close();
 
-				AddHeaderFile(_productInclude);
-			}
-			else
-			{
-				AppendOutput("Error opening: " + srcFilePath);
-			}
-		}
-		else
-		{
-			QFile::FileError fileError = templateFile.error();
-			
-			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-		}
-	}
+                AddHeaderFile( _productInclude );
+            }
+            else
+            {
+                AppendOutput( "Error opening: " + srcFilePath );
+            }
+        }
+        else
+        {
+            QFile::FileError fileError = templateFile.error();
+
+            AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        }
+    }
 }
 
 void QTSqlGen::WriteProject()
 {
-	QFile templateFile;
-	QFile srcFile;
+    QFile templateFile;
+    QFile srcFile;
 
-	SqlProject* currentProject = GetProject();
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		templateFile.setFileName(":/templates/Resources/pro");
-		if (templateFile.open(QIODevice::ReadOnly))
-		{
-			QByteArray templateStr = templateFile.readAll();
+    if ( currentProject != NULL )
+    {
+        templateFile.setFileName( ":/templates/Resources/pro" );
+        if ( templateFile.open( QIODevice::ReadOnly ) )
+        {
+            QByteArray templateStr = templateFile.readAll();
 
-			QString srcFilePath = _targetPath->text() + "/" + _productName + "DB.pro";
+            QString srcFilePath = _targetPath->text() + "/" + _productName + "DB.pro";
 
-			srcFile.setFileName(srcFilePath);
-			if (srcFile.open(QIODevice::WriteOnly))
-			{
-				StandardReplacements(templateStr);
+            srcFile.setFileName( srcFilePath );
+            if ( srcFile.open( QIODevice::WriteOnly ) )
+            {
+                StandardReplacements( templateStr );
 
-				templateStr.replace(QByteArray("<%linkage%>"), 
-					currentProject->_dynamicLibrary ? "dll" : "staticlib" );
+                templateStr.replace( QByteArray( "<%linkage%>" ),
+                        currentProject->_dynamicLibrary ? "dll" : "staticlib" );
 
-				templateStr.replace(QByteArray("<%linkagedef%>"), 
-					currentProject->_dynamicLibrary ? QByteArray("BASE_DLL ") + _dllExportDefine.toAscii() : "BASE_STATIC" );
+                templateStr.replace( QByteArray( "<%linkagedef%>" ),
+                        currentProject->_dynamicLibrary ? QByteArray( "BASE_DLL " ) + _dllExportDefine.toLatin1() : "BASE_STATIC" );
 
-				srcFile.write(templateStr);
+                srcFile.write( templateStr );
 
-				AppendOutput(srcFilePath + " written");
-				srcFile.close();
-			}
-			else
-			{
-				AppendOutput("Error opening: " + srcFilePath);
-			}
-		}
-		else
-		{
-			QFile::FileError fileError = templateFile.error();
-			
-			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-		}
-	}
+                AppendOutput( srcFilePath + " written" );
+                srcFile.close();
+            }
+            else
+            {
+                AppendOutput( "Error opening: " + srcFilePath );
+            }
+        }
+        else
+        {
+            QFile::FileError fileError = templateFile.error();
+
+            AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        }
+    }
 }
 
 void QTSqlGen::AddHeaderFile
 (
-	const QString& headerFileName
+        const QString& headerFileName
 )
-{	
-	if (_headerFiles.size())
-		_headerFiles.append("\r\n");
-	_headerFiles.append("#include \"" + headerFileName + "\"");
+{
+    if ( _headerFiles.size() )
+        _headerFiles.append( "\r\n" );
+    _headerFiles.append( "#include \"" + headerFileName + "\"" );
 
-	if (_headers.size())
-		_headers.append(" \\\r\n");
-	_headers.append("\t" + headerFileName);
+    if ( _headers.size() )
+        _headers.append( " \\\r\n" );
+    _headers.append( "\t" + headerFileName );
 
 }
 
-void QTSqlGen::AddSourceFile
-(
-	const QString& sourceFileName
-)
+void QTSqlGen::AddSourceFile( const QString& sourceFileName )
 {
-	if (_sources.size())
-		_sources.append(" \\\r\n");
+    if ( _sources.size() )
+        _sources.append( " \\\r\n" );
 
-	_sources.append("\t" + sourceFileName );
+    _sources.append( "\t" + sourceFileName );
 }
 
-void QTSqlGen::AppendOutput
-(
-	const QString& output
-)
+void QTSqlGen::AppendOutput( const QString& output )
 {
-	_output->append(output);
+    _output->append( output );
 }
 
-void QTSqlGen::StandardReplacements
-(
-	QByteArray& replaceMe
-)
+void QTSqlGen::StandardReplacements( QByteArray& replaceMe )
 {
-	QString PRODUCTNAME = _productName.toUpper();
+    QString PRODUCTNAME = _productName.toUpper();
 
-	replaceMe.replace("<%PRODUCTNAME%>", PRODUCTNAME.toAscii());
-	replaceMe.replace("<%productInclude%>", _productInclude.toAscii());
-	replaceMe.replace("<%productName%>", _productName.toAscii());
-	replaceMe.replace("<%projectGUID%>", _projectGUID.toAscii());
-	replaceMe.replace("<%dllExport%>", _dllExport.toAscii());
-	replaceMe.replace("<%dllExportDefine%>", _dllExportDefine.toAscii());
-	replaceMe.replace("<%includeFiles%>", _headerFiles.toAscii());
-	replaceMe.replace("<%sources%>", _sources.toAscii());
-	replaceMe.replace("<%headers%>", _headers.toAscii());
-	replaceMe.replace("<%headerFiles%>", _headerFiles.toAscii());
-	replaceMe.replace("<%date%>", _now.toString().toAscii());
-	replaceMe.replace("<%applicationName%>", QCoreApplication::applicationName().toAscii());
+    replaceMe.replace( "<%PRODUCTNAME%>", PRODUCTNAME.toLatin1() );
+    replaceMe.replace( "<%productInclude%>", _productInclude.toLatin1() );
+    replaceMe.replace( "<%productName%>", _productName.toLatin1() );
+    replaceMe.replace( "<%projectGUID%>", _projectGUID.toLatin1() );
+    replaceMe.replace( "<%dllExport%>", _dllExport.toLatin1() );
+    replaceMe.replace( "<%dllExportDefine%>", _dllExportDefine.toLatin1() );
+    replaceMe.replace( "<%includeFiles%>", _headerFiles.toLatin1() );
+    replaceMe.replace( "<%sources%>", _sources.toLatin1() );
+    replaceMe.replace( "<%headers%>", _headers.toLatin1() );
+    replaceMe.replace( "<%headerFiles%>", _headerFiles.toLatin1() );
+    replaceMe.replace( "<%date%>", _now.toString().toLatin1() );
+    replaceMe.replace( "<%applicationName%>", QCoreApplication::applicationName().toLatin1() );
 
-	QString productNamespace = _namespaceEdit->text();
+    QString productNamespace = _namespaceEdit->text();
 
-	if (!productNamespace.isEmpty())
-	{
-		QString namespaceStart = "\nnamespace ";
-		namespaceStart += productNamespace;
-		namespaceStart += "\n{\n";
+    if ( !productNamespace.isEmpty() )
+    {
+        QString namespaceStart = "\nnamespace ";
+        namespaceStart += productNamespace;
+        namespaceStart += "\n{\n";
 
-		replaceMe.replace("<%namespaceStart%>", namespaceStart.toAscii());
-		replaceMe.replace("<%namespaceEnd%>", "\n}\n");
-	}
-	else
-	{
-		// Replace anyways, as productNamespace is an empty string
-		replaceMe.replace("<%namespaceStart%>", productNamespace.toAscii());
-		replaceMe.replace("<%namespaceEnd%>", productNamespace.toAscii());
-	}
+        replaceMe.replace( "<%namespaceStart%>", namespaceStart.toLatin1() );
+        replaceMe.replace( "<%namespaceEnd%>", "\n}\n" );
+    }
+    else
+    {
+        // Replace anyways, as productNamespace is an empty string
+        replaceMe.replace( "<%namespaceStart%>", productNamespace.toLatin1() );
+        replaceMe.replace( "<%namespaceEnd%>", productNamespace.toLatin1() );
+    }
 }
 
 
 void QTSqlGen::on__aboutButton_clicked()
 {
-	AboutDlg aboutDlg(this);
+    AboutDlg aboutDlg( this );
 
-	aboutDlg.exec();
+    aboutDlg.exec();
 }
 
 void QTSqlGen::on__dynamicRadio_toggled
 (
-	bool state
+        bool state
 )
-{	
-	SqlProject* currentProject = GetProject();
+{
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{ 
-		currentProject->_dynamicLibrary = state;
-	}
+    if ( currentProject != NULL )
+    {
+        currentProject->_dynamicLibrary = state;
+    }
 }
 
 void QTSqlGen::on__staticRadio_toggled
 (
-	bool state
+        bool state
 )
 {
-	SqlProject* currentProject = GetProject();
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		currentProject->_dynamicLibrary = state == false;
-	}
+    if ( currentProject != NULL )
+    {
+        currentProject->_dynamicLibrary = state == false;
+    }
 }
 
 void QTSqlGen::WriteDatabaseFiles()
 {
-	QStringList staticFiles;
-	QStringList::iterator staticFile;
+    QStringList staticFiles;
+    QStringList::iterator staticFile;
 
-	QFile templateFile;
-	SqlProject* currentProject = GetProject();
+    QFile templateFile;
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		switch (currentProject->_sourceType)
-		{
-		case eODBC:
-			templateFile.setFileName(":/templates/Resources/ODBCDatabase.h");
-			break;
+    if ( currentProject != NULL )
+    {
+        switch ( currentProject->_sourceType )
+        {
+        case eODBC:
+            templateFile.setFileName( ":/templates/Resources/ODBCDatabase.h" );
+            break;
 
-		case eSqlite:
-			templateFile.setFileName(":/templates/Resources/SqliteDatabase.h");
-			break;
+        case eSqlite:
+            templateFile.setFileName( ":/templates/Resources/SqliteDatabase.h" );
+            break;
 
-		default:
-			return;
-		}
+        default:
+            return;
+        }
 
-		if (templateFile.open(QIODevice::ReadOnly))
-		{
-			QByteArray templateStr = templateFile.readAll();
+        if ( templateFile.open( QIODevice::ReadOnly ) )
+        {
+            QByteArray templateStr = templateFile.readAll();
 
-			QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.h";
-			QFile srcFile;
+            QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.h";
+            QFile srcFile;
 
-			srcFile.setFileName(srcFilePath);
-			if (srcFile.open(QIODevice::WriteOnly))
-			{
-				AddHeaderFile(_productName + "Database.h");
+            srcFile.setFileName( srcFilePath );
+            if ( srcFile.open( QIODevice::WriteOnly ) )
+            {
+                AddHeaderFile( _productName + "Database.h" );
 
-				QString includes;
-				QString tables;
-				QString views;
-				QString tablePtrs;
-		
-				TableIter table = _tables.begin();
-				while (table != _tables.end())
-				{
-					QString variableName((*table)._name);
+                QString includes;
+                QString tables;
+                QString views;
+                QString tablePtrs;
 
-					variableName[0] = QChar(variableName[0]).toLower();
+                TableIter table = _tables.begin();
+                while ( table != _tables.end() )
+                {
+                    QString variableName( ( *table )._name );
 
-					includes += "#include \"" + (*table)._name + "Table.h\"\n";
+                    variableName[0] = QChar( variableName[0] ).toLower();
 
-					tables += "\t" + (*table)._name + "Table* Get" + (*table)._name + "Table(void);\n";
-					
-					if (tablePtrs.size())
-						tablePtrs += "\n";
+                    includes += "#include \"" + ( *table )._name + "Table.h\"\n";
 
-					tablePtrs += "\t" + (*table)._name + "Table* \t_" + variableName + "Table;";
+                    tables += "\t" + ( *table )._name + "Table* Get" + ( *table )._name + "Table(void);\n";
 
-					table++;
-				}	
+                    if ( tablePtrs.size() )
+                        tablePtrs += "\n";
 
-				TableIter view = _views.begin();
-				while (view != _views.end())
-				{
-					QString variableName((*view)._name);
+                    tablePtrs += "\t" + ( *table )._name + "Table* \t_" + variableName + "Table;";
 
-					variableName[0] = QChar(variableName[0]).toLower();
+                    table++;
+                }
 
-					includes += "#include \"" + (*view)._name + "View.h\"\n";
-					views += "\t" + (*view)._name + "View* Get" + (*view)._name + "View(void);\n";	
-					
-					if (tablePtrs.size())
-						tablePtrs += "\n";
-					tablePtrs += "\t_" + (*view)._name + "View* \t_" + variableName + "View;";
+                TableIter view = _views.begin();
+                while ( view != _views.end() )
+                {
+                    QString variableName( ( *view )._name );
 
-					view++;
-				}
+                    variableName[0] = QChar( variableName[0] ).toLower();
 
-				templateStr.replace("<%tables%>", tables.toAscii());
-				templateStr.replace("<%views%>", views.toAscii());
-				templateStr.replace("<%tablePtrs%>", tablePtrs.toAscii());
-				templateStr.replace("<%includes%>", includes.toAscii());
-				StandardReplacements(templateStr);
-				
-				srcFile.write(templateStr);
+                    includes += "#include \"" + ( *view )._name + "View.h\"\n";
+                    views += "\t" + ( *view )._name + "View* Get" + ( *view )._name + "View(void);\n";
 
-				AppendOutput(srcFilePath + " written");
-				srcFile.close();
-			}
-			else
-			{
-				AppendOutput("Error opening: " + srcFilePath);
-			}
+                    if ( tablePtrs.size() )
+                        tablePtrs += "\n";
+                    tablePtrs += "\t_" + ( *view )._name + "View* \t_" + variableName + "View;";
 
-			templateFile.close();
-		}
-		else
-		{
-			QFile::FileError fileError = templateFile.error();
-			
-			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-		}
+                    view++;
+                }
 
-		switch (currentProject->_sourceType)
-		{
-		case eODBC:
-			templateFile.setFileName(":/templates/Resources/ODBCDatabase.cpp");
-			break;
+                templateStr.replace( "<%tables%>", tables.toLatin1() );
+                templateStr.replace( "<%views%>", views.toLatin1() );
+                templateStr.replace( "<%tablePtrs%>", tablePtrs.toLatin1() );
+                templateStr.replace( "<%includes%>", includes.toLatin1() );
+                StandardReplacements( templateStr );
 
-		case eSqlite:
-			templateFile.setFileName(":/templates/Resources/SqliteDatabase.cpp");
-			break;
+                srcFile.write( templateStr );
 
-		default:
-			return;
-		}
+                AppendOutput( srcFilePath + " written" );
+                srcFile.close();
+            }
+            else
+            {
+                AppendOutput( "Error opening: " + srcFilePath );
+            }
 
-		if (templateFile.open(QIODevice::ReadOnly))
-		{
-			QByteArray templateStr = templateFile.readAll();
+            templateFile.close();
+        }
+        else
+        {
+            QFile::FileError fileError = templateFile.error();
 
-			QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.cpp";
-			QFile srcFile;
+            AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        }
 
-			srcFile.setFileName(srcFilePath);
-			if (srcFile.open(QIODevice::WriteOnly))
-			{
-				AddSourceFile(_productName + "Database.cpp");
+        switch ( currentProject->_sourceType )
+        {
+        case eODBC:
+            templateFile.setFileName( ":/templates/Resources/ODBCDatabase.cpp" );
+            break;
 
-				QString statics;
-				QString destructors;
-				QString tableRoutines;
-		
-				TableIter table = _tables.begin();
-				while (table != _tables.end())
-				{
-					QString variableName((*table)._name);
+        case eSqlite:
+            templateFile.setFileName( ":/templates/Resources/SqliteDatabase.cpp" );
+            break;
 
-					variableName[0] = QChar(variableName[0]).toLower();
+        default:
+            return;
+        }
 
-					if (statics.size())
-						statics += ",\n";
-					statics += "\t_" + variableName + "Table(NULL)";
-					
-					tableRoutines += GenerateTableRoutine(*table);
+        if ( templateFile.open( QIODevice::ReadOnly ) )
+        {
+            QByteArray templateStr = templateFile.readAll();
 
-					destructors += "\tif (_" + variableName + "Table != NULL)\n\t{\n";
-					destructors += "\t\tdelete _" + variableName + "Table;\n";
-					destructors += "\t\t_" + variableName + "Table = NULL;\n";
-					destructors += "\t}\n";
-					table++;
-				}	
+            QString srcFilePath = _targetPath->text() + "/" + _productName + "Database.cpp";
+            QFile srcFile;
 
-				TableIter view = _views.begin();
-				while (view != _views.end())
-				{
-					QString variableName((*view)._name);
+            srcFile.setFileName( srcFilePath );
+            if ( srcFile.open( QIODevice::WriteOnly ) )
+            {
+                AddSourceFile( _productName + "Database.cpp" );
 
-					variableName[0] = QChar(variableName[0]).toLower();
+                QString statics;
+                QString destructors;
+                QString tableRoutines;
 
-					if (statics.size())
-						statics += ",\n";
+                TableIter table = _tables.begin();
+                while ( table != _tables.end() )
+                {
+                    QString variableName( ( *table )._name );
 
-					statics += "\t_" + variableName + "View(NULL)";
+                    variableName[0] = QChar( variableName[0] ).toLower();
 
-					tableRoutines += GenerateTableRoutine(*view);
+                    if ( statics.size() )
+                        statics += ",\n";
+                    statics += "\t_" + variableName + "Table(NULL)";
 
-					destructors += "\tif (_" + variableName + "View != NULL)\n\t{\n";
-					destructors += "\t\tdelete _" + variableName + "View;\n";
-					destructors += "\t\t_" + variableName + "View = NULL;\n";
-					destructors += "\t}\n";
+                    tableRoutines += GenerateTableRoutine( *table );
 
-					view++;
-				}
+                    destructors += "\tif (_" + variableName + "Table != NULL)\n\t{\n";
+                    destructors += "\t\tdelete _" + variableName + "Table;\n";
+                    destructors += "\t\t_" + variableName + "Table = NULL;\n";
+                    destructors += "\t}\n";
+                    table++;
+                }
 
-				StandardReplacements(templateStr);
+                TableIter view = _views.begin();
+                while ( view != _views.end() )
+                {
+                    QString variableName( ( *view )._name );
 
-				templateStr.replace("<%destructors%>", destructors.toAscii());
-				templateStr.replace("<%initializers%>", statics.toAscii());
-				templateStr.replace("<%tableRoutines%>", tableRoutines.toAscii());
-				
-				srcFile.write(templateStr);
+                    variableName[0] = QChar( variableName[0] ).toLower();
 
-				AppendOutput(srcFilePath + " written");
-				srcFile.close();
-			}
-			else
-			{
-				AppendOutput("Error opening: " + srcFilePath);
-			}
+                    if ( statics.size() )
+                        statics += ",\n";
 
-			templateFile.close();
-		}
-		else
-		{
-			QFile::FileError fileError = templateFile.error();
-			
-			AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-		}
+                    statics += "\t_" + variableName + "View(NULL)";
 
-		if (currentProject->_sourceType == eODBC)
-		{
-			templateFile.setFileName(":/templates/Resources/ODBCDrivers.h");
-		
-			if (templateFile.open(QIODevice::ReadOnly))
-			{
-				QByteArray templateStr = templateFile.readAll();
+                    tableRoutines += GenerateTableRoutine( *view );
 
-				QString srcFilePath = _targetPath->text() + "/" + "ODBCDrivers.h";
-				QFile odbcHeaderFile;
+                    destructors += "\tif (_" + variableName + "View != NULL)\n\t{\n";
+                    destructors += "\t\tdelete _" + variableName + "View;\n";
+                    destructors += "\t\t_" + variableName + "View = NULL;\n";
+                    destructors += "\t}\n";
 
-				odbcHeaderFile.setFileName(srcFilePath);
-				if (odbcHeaderFile.open(QIODevice::WriteOnly))
-				{
-					AddHeaderFile("ODBCDrivers.h");
-				
-					odbcHeaderFile.write(templateStr);
+                    view++;
+                }
 
-					AppendOutput("ODBCDrivers.h written");
-					odbcHeaderFile.close();
-				}
-				else
-				{
-					AppendOutput("Error opening: " + srcFilePath);
-				}
+                StandardReplacements( templateStr );
 
-				templateFile.close();
-			}
-			else
-			{
-				QFile::FileError fileError = templateFile.error();
-				
-				AppendOutput("Error opening: " + templateFile.fileName() + ":" + QString::number(fileError));
-			}
-		}
-	}
+                templateStr.replace( "<%destructors%>", destructors.toLatin1() );
+                templateStr.replace( "<%initializers%>", statics.toLatin1() );
+                templateStr.replace( "<%tableRoutines%>", tableRoutines.toLatin1() );
+
+                srcFile.write( templateStr );
+
+                AppendOutput( srcFilePath + tr( " written" ) );
+                srcFile.close();
+            }
+            else
+            {
+                AppendOutput( tr( "Error opening: " ) + srcFilePath );
+            }
+
+            templateFile.close();
+        }
+        else
+        {
+            QFile::FileError fileError = templateFile.error();
+
+            AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
+        }
+
+        if ( currentProject->_sourceType == eODBC )
+        {
+            templateFile.setFileName( ":/templates/Resources/ODBCDrivers.h" );
+
+            if ( templateFile.open( QIODevice::ReadOnly ) )
+            {
+                QByteArray templateStr = templateFile.readAll();
+
+                QString srcFilePath = _targetPath->text() + "/" + "ODBCDrivers.h";
+                QFile odbcHeaderFile;
+
+                odbcHeaderFile.setFileName( srcFilePath );
+                if ( odbcHeaderFile.open( QIODevice::WriteOnly ) )
+                {
+                    AddHeaderFile( "ODBCDrivers.h" );
+
+                    odbcHeaderFile.write( templateStr );
+
+                    AppendOutput( tr( "ODBCDrivers.h written" ) );
+                    odbcHeaderFile.close();
+                }
+                else
+                {
+                    AppendOutput( tr( "Error opening: " ) + srcFilePath );
+                }
+
+                templateFile.close();
+            }
+            else
+            {
+                QFile::FileError fileError = templateFile.error();
+
+                AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
+            }
+        }
+    }
 }
 
 void QTSqlGen::PopulateDrivers()
 {
-	int i = 0;
+    int i = 0;
 
-	_schemaSource->clear();
+    _schemaSource->clear();
 
-	while (DriverNames[i] != NULL)
-	{
-		_schemaSource->addItem(QString(DriverNames[i]));
-		i++;
-	}
+    while ( DriverNames[i] != NULL )
+    {
+        _schemaSource->addItem( QString( DriverNames[i] ) );
+        i++;
+    }
 }
 
-const QString kProjects("Projects");
-const QString kProjectName("ProjectName");
-const QString kDatabasePath("DatabasePath");
-const QString kTargetPath("TargetPath");
-const QString kWriteProject("WriteProject");
-const QString kDynamic("Dynamic");
-const QString kSourceType("SourceType");
-const QString kODBCDriver("ODBCDriver");
-const QString kConnectionString("ConnectionString");
+const QString kProjects( "Projects" );
+const QString kProjectName( "ProjectName" );
+const QString kDatabasePath( "DatabasePath" );
+const QString kTargetPath( "TargetPath" );
+const QString kWriteProject( "WriteProject" );
+const QString kDynamic( "Dynamic" );
+const QString kSourceType( "SourceType" );
+const QString kODBCDriver( "ODBCDriver" );
+const QString kConnectionString( "ConnectionString" );
 
 void QTSqlGen::LoadProjects()
-{	
-	QSettings settings;
+{
+    QSettings settings;
 
-	_projectNames->blockSignals(true);
-	_projectNames->clear();
+    _projectNames->blockSignals( true );
+    _projectNames->clear();
 
-	settings.beginGroup(kProjects);
+    settings.beginGroup( kProjects );
 
-	QStringList projects = settings.childGroups();
-	if (projects.size() > 0)
-	{
-		QList<QString>::iterator project = projects.begin();
-		while (project != projects.end())
-		{
-			settings.beginGroup(*project);
+    QStringList projects = settings.childGroups();
+    if ( projects.size() > 0 )
+    {
+        QList<QString>::iterator project = projects.begin();
+        while ( project != projects.end() )
+        {
+            settings.beginGroup( *project );
 
-			SqlProject* sqlProject = new SqlProject;
+            SqlProject* sqlProject = new SqlProject;
 
-			sqlProject->_projectName = settings.value(kProjectName).toString();
-			sqlProject->_targetPath = settings.value(kTargetPath).toString();
-			sqlProject->_sourceType = (DatabaseSourceType) settings.value(kSourceType).toInt();
-			sqlProject->_connectString = settings.value(kConnectionString).toString();
-			sqlProject->_dynamicLibrary = settings.value(kDynamic).toBool();
-			sqlProject->_writeProject = settings.value(kWriteProject).toBool();
-			sqlProject->_databasePath = settings.value(kDatabasePath).toString();
+            sqlProject->_projectName = settings.value( kProjectName ).toString();
+            sqlProject->_targetPath = settings.value( kTargetPath ).toString();
+            sqlProject->_sourceType = ( DatabaseSourceType ) settings.value( kSourceType ).toInt();
+            sqlProject->_connectString = settings.value( kConnectionString ).toString();
+            sqlProject->_dynamicLibrary = settings.value( kDynamic ).toBool();
+            sqlProject->_writeProject = settings.value( kWriteProject ).toBool();
+            sqlProject->_databasePath = settings.value( kDatabasePath ).toString();
 
-			int driverIndex = settings.value(kODBCDriver, QVariant(0)).toInt();
-			sqlProject->_odbcDriver = (ODBCDrivers) driverIndex;
+            int driverIndex = settings.value( kODBCDriver, QVariant( 0 ) ).toInt();
+            sqlProject->_odbcDriver = ( ODBCDrivers ) driverIndex;
 
-			AddProject(sqlProject, _projectNames->count() == 0);
+            AddProject( sqlProject, _projectNames->count() == 0 );
 
-			settings.endGroup();
+            settings.endGroup();
 
-			project++;
-		}
-	}
+            project++;
+        }
+    }
 
-	settings.endGroup();
+    settings.endGroup();
 
-	if (_projectNames->count() == 0)
-		on__newProject_clicked();
-	
-	_projectNames->blockSignals(false);
+    if ( _projectNames->count() == 0 )
+        on__newProject_clicked();
+
+    _projectNames->blockSignals( false );
 }
 
 void QTSqlGen::SaveProjects()
 {
-	QSettings settings;
-	QString groupKey;
+    QSettings settings;
+    QString groupKey;
 
-	settings.beginGroup(kProjects);
+    settings.beginGroup( kProjects );
 
-	settings.remove("");
+    settings.remove( "" );
 
-	for (int index = 0; index < _projectNames->count(); index++)
-	{
-		SqlProject* project = GetProject(index);
-		if (project != NULL)
-		{
-			groupKey = QString("Project%1").arg(index);
+    for ( int index = 0; index < _projectNames->count(); index++ )
+    {
+        SqlProject* project = GetProject( index );
+        if ( project != NULL )
+        {
+            groupKey = QString( "Project%1" ).arg( index );
 
-			QString projectName = _projectNames->itemText(index);
+            QString projectName = _projectNames->itemText( index );
 
-			settings.beginGroup(groupKey);
+            settings.beginGroup( groupKey );
 
-			settings.setValue(kProjectName, projectName);
-			settings.setValue(kTargetPath, project->_targetPath);
-			settings.setValue(kSourceType, QVariant((int) (project->_sourceType)));
-			settings.setValue(kDynamic, project->_dynamicLibrary);
-			settings.setValue(kWriteProject, project->_writeProject);
-			settings.setValue(kDatabasePath, project->_databasePath);
-			settings.setValue(kODBCDriver, QVariant((int) (project->_odbcDriver)));
-			settings.setValue(kConnectionString, QVariant(project->_connectString));
+            settings.setValue( kProjectName, projectName );
+            settings.setValue( kTargetPath, project->_targetPath );
+            settings.setValue( kSourceType, QVariant( ( int )( project->_sourceType ) ) );
+            settings.setValue( kDynamic, project->_dynamicLibrary );
+            settings.setValue( kWriteProject, project->_writeProject );
+            settings.setValue( kDatabasePath, project->_databasePath );
+            settings.setValue( kODBCDriver, QVariant( ( int ) ( project->_odbcDriver ) ) );
+            settings.setValue( kConnectionString, QVariant( project->_connectString ) );
 
+            settings.endGroup();
+        }
+    }
 
-			settings.endGroup();
-		}
-	}
-
-	settings.endGroup();
+    settings.endGroup();
 }
 
-void QTSqlGen::SetCurrentProject
-(
-	int index
-)
+void QTSqlGen::SetCurrentProject( int index )
 {
-	if (index != -1)
-	{
-		SqlProject* currentProject = GetProject();
+    if ( index != -1 )
+    {
+        SqlProject* currentProject = GetProject();
 
-		switch (currentProject->_sourceType)
-		{
-		case eODBC:
-			_databaseType->setCurrentIndex(0);
-			_databaseStack->setCurrentIndex(0);
-			break;
+        switch ( currentProject->_sourceType )
+        {
+        case eODBC:
+            _databaseType->setCurrentIndex( 0 );
+            _databaseStack->setCurrentIndex( 0 );
+            break;
 
-		case eSqlite:
-			_databaseType->setCurrentIndex(1);
-			_databaseStack->setCurrentIndex(1);
-			break;
-		}
+        case eSqlite:
+            _databaseType->setCurrentIndex( 1 );
+            _databaseStack->setCurrentIndex( 1 );
+            break;
+        }
 
-		_targetPath->setText(currentProject->_targetPath);
-		_dbPath->setText(currentProject->_databasePath);
-		_connectionString->setText(currentProject->_connectString);
-		_replaceProject->setChecked(currentProject->_writeProject);
-		_dynamicRadio->setChecked(currentProject->_dynamicLibrary);
-		_staticRadio->setChecked(currentProject->_dynamicLibrary == false);
-		_schemaSource->setCurrentIndex((int) (currentProject->_odbcDriver));
-	}
+        _targetPath->setText( currentProject->_targetPath );
+        _dbPath->setText( currentProject->_databasePath );
+        _connectionString->setText( currentProject->_connectString );
+        _replaceProject->setChecked( currentProject->_writeProject );
+        _dynamicRadio->setChecked( currentProject->_dynamicLibrary );
+        _staticRadio->setChecked( currentProject->_dynamicLibrary == false );
+        _schemaSource->setCurrentIndex( ( int ) ( currentProject->_odbcDriver ) );
+    }
 }
 
 void InitializeMap()
-{	
-	gDataMap["text"] = Column::eText; 
-	gDataMap["memo"] = Column::eText;
-	gDataMap["varchar"] = Column::eText; 
-	gDataMap["quint32"] = Column::eUInt;
-	gDataMap["numeric"] = Column::eInt;
-	gDataMap["integer"] = Column::eInt;
-	gDataMap["int"] = Column::eInt;
-	gDataMap["datetime"] = Column::eDateTime;
-	gDataMap["date"] = Column::eDate;
-	gDataMap["time"] = Column::eTime;
-	gDataMap["guid"] = Column::eGuid;
-	gDataMap["float"] = Column::eReal;
-	gDataMap["double"] = Column::eReal;
-	gDataMap["real"] = Column::eReal;
-	gDataMap["bool"] = Column::eBoolean;
-	gDataMap["boolean"] = Column::eBoolean;
+{
+    gDataMap["text"] = Column::eText;
+    gDataMap["memo"] = Column::eText;
+    gDataMap["varchar"] = Column::eText;
+    gDataMap["quint32"] = Column::eUInt;
+    gDataMap["numeric"] = Column::eInt;
+    gDataMap["integer"] = Column::eInt;
+    gDataMap["int"] = Column::eInt;
+    gDataMap["datetime"] = Column::eDateTime;
+    gDataMap["date"] = Column::eDate;
+    gDataMap["time"] = Column::eTime;
+    gDataMap["guid"] = Column::eGuid;
+    gDataMap["float"] = Column::eReal;
+    gDataMap["double"] = Column::eReal;
+    gDataMap["real"] = Column::eReal;
+    gDataMap["bool"] = Column::eBoolean;
+    gDataMap["boolean"] = Column::eBoolean;
 };
 
 #include "ProjectNameDialog.h"
 
 void QTSqlGen::on__newProject_clicked()
-{	
-	ProjectNameDialog pnd(this);
+{
+    ProjectNameDialog pnd( this );
 
-	if (pnd.exec() == QDialog::Accepted && pnd._projectName->text().size() > 0)
-	{
-		SqlProject* sqlProject = new SqlProject;
+    if ( pnd.exec() == QDialog::Accepted && pnd._projectName->text().size() > 0 )
+    {
+        SqlProject* sqlProject = new SqlProject;
 
-		sqlProject->_projectName = pnd._projectName->text();
+        sqlProject->_projectName = pnd._projectName->text();
 
-		AddProject(sqlProject, true);
-	}
+        AddProject( sqlProject, true );
+    }
 }
 
 void QTSqlGen::on__deleteProject_clicked()
 {
-	if (QMessageBox::warning(this, "Delete the Project?", 
-		"Are you sure?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
-	{
-		int index = _projectNames->currentIndex();
-		SqlProject* sqlProject = GetProject(index);
+    if ( QMessageBox::warning( this, tr( "Delete the Project?" ), tr( "Are you sure?" ), QMessageBox::Yes | QMessageBox::No, QMessageBox::No ) == QMessageBox::Yes )
+    {
+        int index = _projectNames->currentIndex();
+        SqlProject* sqlProject = GetProject( index );
 
-		_projectNames->removeItem(index);
+        _projectNames->removeItem( index );
 
-		if (sqlProject != NULL)
-			delete sqlProject;
+        if( sqlProject != NULL )
+            delete sqlProject;
 
-		SetCurrentProject(_projectNames->currentIndex());
-	}
+        SetCurrentProject( _projectNames->currentIndex() );
+    }
 }
 
-void QTSqlGen::on__projectNames_currentIndexChanged
-(
-	int index
-)
+void QTSqlGen::on__projectNames_currentIndexChanged( int index )
 {
-	if (index != -1)
-		SetCurrentProject(index);
+    if ( index != -1 )
+        SetCurrentProject( index );
 }
 
-void QTSqlGen::on__connectionString_textChanged
-(
-	const QString& newText
-)
+void QTSqlGen::on__connectionString_textChanged( const QString& newText )
 {
-	SqlProject* currentProject = GetProject();
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		currentProject->_connectString = newText;
-	}
+    if ( currentProject != NULL )
+    {
+        currentProject->_connectString = newText;
+    }
 }
 
-void QTSqlGen::on__schemaSource_currentIndexChanged
-(
-	int index
-)
-{	
-	SqlProject* currentProject = GetProject();
-
-	if (currentProject != NULL)
-	{
-		currentProject->_odbcDriver = (ODBCDrivers) index;
-	}
-}
-
-void QTSqlGen::on__databaseType_currentIndexChanged
-( 
-	int index 
-)
+void QTSqlGen::on__schemaSource_currentIndexChanged( int index )
 {
-	SqlProject* currentProject = GetProject();
+    SqlProject* currentProject = GetProject();
 
-	if (currentProject != NULL)
-	{
-		int source = _databaseType->currentIndex();
-		switch (source)
-		{
-		case 0:
-			currentProject->_sourceType = eODBC;
-			_databaseStack->setCurrentIndex(0);
-			break;
-
-		case 1:
-			currentProject->_sourceType = eSqlite;
-			_databaseStack->setCurrentIndex(1);
-			break;
-		}
-	}
+    if( currentProject != NULL )
+    {
+        currentProject->_odbcDriver = ( ODBCDrivers )index;
+    }
 }
 
-void QTSqlGen::on__replaceProject_stateChanged
-(
-	int state
-)
+void QTSqlGen::on__databaseType_currentIndexChanged( int index )
 {
-	bool newState = false;
+    SqlProject* currentProject = GetProject();
 
-	switch (state)
-	{
-	case Qt::Unchecked:
-	case Qt::PartiallyChecked:
-		newState = false;
-		break;
+    if ( currentProject != NULL )
+    {
+        int source = _databaseType->currentIndex();
+        switch ( source )
+        {
+        case 0:
+            currentProject->_sourceType = eODBC;
+            _databaseStack->setCurrentIndex( 0 );
+            break;
 
-	case Qt::Checked:
-		newState = true;
-		break;
-	}
-
-	SqlProject* currentProject = GetProject();
-
-	if (currentProject != NULL)
-		currentProject->_writeProject = newState;
+        case 1:
+            currentProject->_sourceType = eSqlite;
+            _databaseStack->setCurrentIndex( 1 );
+            break;
+        }
+    }
 }
 
-void QTSqlGen::AddProject
-(
-	SqlProject* sqlProject,
-	bool setAsCurrentProject
-)
+void QTSqlGen::on__replaceProject_stateChanged( int state )
 {
-	if (sqlProject != NULL)
-	{
-		QVariant variant;
+    bool newState = false;
+
+    switch ( state )
+    {
+    case Qt::Unchecked:
+    case Qt::PartiallyChecked:
+        newState = false;
+        break;
+
+    case Qt::Checked:
+        newState = true;
+        break;
+    }
+
+    SqlProject* currentProject = GetProject();
+
+    if ( currentProject != NULL )
+        currentProject->_writeProject = newState;
+}
+
+void QTSqlGen::AddProject( SqlProject* sqlProject, bool setAsCurrentProject )
+{
+    if ( sqlProject != NULL )
+    {
+        QVariant variant;
 
 #if QT_POINTER_SIZE == 4
-		variant.setValue((uint) sqlProject);
+        variant.setValue( ( uint )sqlProject );
 #endif
 
 #if QT_POINTER_SIZE == 8
-		variant.setValue((qlonglong) sqlProject);
+        variant.setValue( ( qlonglong )sqlProject );
 #endif
 
-		_projectNames->addItem(sqlProject->_projectName, variant);
+        _projectNames->addItem( sqlProject->_projectName, variant );
 
-		if (setAsCurrentProject)
-		{
-			SetCurrentProject(_projectNames->count() - 1);
-			_projectNames->setCurrentIndex(_projectNames->count() - 1);
-		}
-	}
+        if ( setAsCurrentProject )
+        {
+            SetCurrentProject( _projectNames->count() - 1 );
+            _projectNames->setCurrentIndex( _projectNames->count() - 1 );
+        }
+    }
 }
 
-SqlProject* QTSqlGen::GetProject
-(
-	int index
-)
+SqlProject* QTSqlGen::GetProject( int index )
 {
-	SqlProject* currentProject(NULL);
+    SqlProject* currentProject( NULL );
+    if ( index == -1 )
+        index = _projectNames->currentIndex();
 
-	if (index == -1)
-		index = _projectNames->currentIndex();
-
-	if (index != -1)
+    if( index != -1 )
 #if QT_POINTER_SIZE == 4
-		currentProject = (SqlProject*) _projectNames->itemData(index).toUInt();
+        currentProject = ( SqlProject* )_projectNames->itemData( index ).toUInt();
 #endif
 
 #if QT_POINTER_SIZE == 8
-		currentProject = (SqlProject*) _projectNames->itemData(index).toULongLong();
+    currentProject = ( SqlProject* )_projectNames->itemData( index ).toULongLong();
 #endif
 
-	return currentProject;
+    return currentProject;
 }

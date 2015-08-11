@@ -23,11 +23,11 @@
 //THE SOFTWARE.
 
 SqlProject::SqlProject() :
-	_dynamicLibrary(true),
-	_sourceType(eSqlite),
-	_writeProject(false)
+    _dynamicLibrary( true ),
+    _sourceType( eSqlite ),
+    _writeProject( false )
 {
-	_projectName = "Untitled";
+    _projectName = "Untitled";
 }
 
 SqlProject::~SqlProject()

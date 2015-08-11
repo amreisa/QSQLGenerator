@@ -20,19 +20,20 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "QTSqlGen.h"
 
-int main(int argc, char *argv[])
+int main( int argc, char *argv[] )
 {
-    QApplication a(argc, argv);
+    QApplication a( argc, argv );
 
-	a.setOrganizationDomain("opensource.org");
-	a.setOrganizationName("OpenSource");
-	a.setApplicationName("qt-sqlite-generator");
+    a.setOrganizationDomain( "opensource.org" );
+    a.setOrganizationName( "OpenSource" );
+    a.setApplicationName( "QSQLGenerator" );
 
     QTSqlGen w;
+    a.setActiveWindow( &w );
     w.show();
-    a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+    a.connect( &a, SIGNAL( lastWindowClosed() ), &a, SLOT( quit() ) );
     return a.exec();
 }
