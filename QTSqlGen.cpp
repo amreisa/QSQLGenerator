@@ -491,15 +491,14 @@ void QTSqlGen::LoadODBCColumns()
                     default:
                         column._type = Column::eUnknown;
 
-                        QString message = "Unhandled Type:";
+                        QString message = tr( "Unhandled Type:" );
                         message += QString( QVariant::typeToName( sqlField.type() ) );
-                        message += " In Column:" + column._name;
-                        message += " In Table:" + ( *iter )._name;
+                        message += tr( " In Column:" ) + column._name;
+                        message += tr( " In Table:" ) + ( *iter )._name;
 
                         AppendOutput( message );
                         break;
                     }
-
                     ( *iter )._columns.push_back( column );
                 }
             }
@@ -507,10 +506,9 @@ void QTSqlGen::LoadODBCColumns()
             {
                 QSqlError se = query.lastError();
 
-                AppendOutput( "Exec Failed" );
+                AppendOutput( tr( "Exec Failed" ) );
                 AppendOutput( se.text() );
             }
-
             iter++;
         }
     }
@@ -531,7 +529,6 @@ void QTSqlGen::LoadODBCTables()
         case eOracle: // QT returns too much, use an explicit query
             tables = LoadOracleTables();
             break;
-
         default: // just use QTs default
             tables = _db.tables( QSql::Tables );
             break;
@@ -645,11 +642,7 @@ void QTSqlGen::LoadODBCViewColumns()
 {
 }
 
-void QTSqlGen::GenCode
-(
-        Tables& tables,
-        QString fileName
-)
+void QTSqlGen::GenCode( Tables& tables, QString fileName )
 {
     QFile templateFile;
 
@@ -757,12 +750,7 @@ void QTSqlGen::GenCode
     }
 }
 
-QString QTSqlGen::GenerateFieldType
-(
-        const QString& columnName,
-        const QString& name,
-        Column::Type type
-)
+QString QTSqlGen::GenerateFieldType( const QString& columnName, const QString& name, Column::Type type )
 {
     QString result;
     QString uName = name.mid( 0, 1 ).toUpper() + name.mid( 1 );
@@ -833,11 +821,7 @@ QString QTSqlGen::GenerateFieldType
     return result;
 }
 
-QString QTSqlGen::GenerateSelector
-(
-        const QString& name,
-        const Column::Type type
-)
+QString QTSqlGen::GenerateSelector( const QString& name, const Column::Type type )
 {
     QString lName( name );
     lName.replace( "_", "" );
@@ -904,10 +888,7 @@ QString QTSqlGen::GenerateSelector
     return QString( accessor );
 }
 
-void QTSqlGen::GenRecordHeader
-(
-        Table& table
-)
+void QTSqlGen::GenRecordHeader( Table& table )
 {
     QFile templateFile;
 
@@ -1023,10 +1004,7 @@ void QTSqlGen::GenRecordHeader
     }
 }
 
-void QTSqlGen::GenRecordSource
-(
-        Table& table
-)
+void QTSqlGen::GenRecordSource( Table& table )
 {
     QFile templateFile;
 
@@ -1113,10 +1091,7 @@ void QTSqlGen::GenRecordSource
 }
 
 // todo
-void QTSqlGen::GenSelectionHeader
-(
-        Table& table
-)
+void QTSqlGen::GenSelectionHeader( Table& table )
 {
     QFile templateFile;
 
@@ -1173,10 +1148,7 @@ void QTSqlGen::GenSelectionHeader
     }
 }
 
-void QTSqlGen::GenSelectionSource
-(
-        Table& table
-)
+void QTSqlGen::GenSelectionSource( Table& table )
 {
     QFile templateFile;
 
@@ -1219,11 +1191,7 @@ void QTSqlGen::GenSelectionSource
     }
 }
 
-QString QTSqlGen::GenerateAccessor
-(
-        const QString& name,
-        const QString& type
-)
+QString QTSqlGen::GenerateAccessor( const QString& name, const QString& type )
 {
     QString lName( name );
     lName.replace( "_", "" );
@@ -1259,12 +1227,7 @@ QString QTSqlGen::GenerateAccessor
     return QString( accessor );
 }
 
-QString QTSqlGen::GenerateAccessorSource
-(
-        const QString& tableName,
-        const QString& name,
-        const Column::Type type
-)
+QString QTSqlGen::GenerateAccessorSource( const QString& tableName, const QString& name, const Column::Type type )
 {
     QString lName( name );
     lName.replace( "_", "" );
@@ -1332,10 +1295,7 @@ QString QTSqlGen::GenerateAccessorSource
     return QString( accessor );
 }
 
-QString QTSqlGen::GenerateTableRoutine
-(
-        const Table& table
-)
+QString QTSqlGen::GenerateTableRoutine( const Table& table )
 {
     QByteArray tableRoutine;
     QString type( table._type == Table::eTable ? "Table" : "View" );
@@ -1551,10 +1511,7 @@ void QTSqlGen::WriteProject()
     }
 }
 
-void QTSqlGen::AddHeaderFile
-(
-        const QString& headerFileName
-)
+void QTSqlGen::AddHeaderFile( const QString& headerFileName )
 {
     if ( _headerFiles.size() )
         _headerFiles.append( "\r\n" );
