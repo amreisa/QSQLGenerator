@@ -3,7 +3,7 @@
 This project is a fork of qsqlcodegen, which can be found here: http://sourceforge.net/projects/qsqlcodegen/
 
 ## Building
-You will need Qt 5.x in order to build QSQLGenerator.  There is a pro file and a visual studio 2008 solution
+You will need Qt 4.x or 5.x in order to build QSQLGenerator.  There is a pro file and a visual studio 2008 solution
 provided.
 
 ## Notes
