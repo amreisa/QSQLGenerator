@@ -1823,7 +1823,7 @@ void QTSqlGen::WriteDatabaseFiles()
 
                     includes += "#include \"" + ( *table )._name + "Table.h\"\n";
 
-                    tables += "\t" + ( *table )._name + "Table* Get" + ( *table )._name + "Table(void);\n";
+                    tables += "\t" + ( *table )._name + "Table* Get" + ( *table )._name + "Table( void );\n";
 
                     if ( tablePtrs.size() )
                         tablePtrs += "\n";
@@ -1841,7 +1841,7 @@ void QTSqlGen::WriteDatabaseFiles()
                     variableName[0] = QChar( variableName[0] ).toLower();
 
                     includes += "#include \"" + ( *view )._name + "View.h\"\n";
-                    views += "\t" + ( *view )._name + "View* Get" + ( *view )._name + "View(void);\n";
+                    views += "\t" + ( *view )._name + "View* Get" + ( *view )._name + "View( void );\n";
 
                     if ( tablePtrs.size() )
                         tablePtrs += "\n";
