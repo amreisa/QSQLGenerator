@@ -268,7 +268,7 @@ void QTSqlGen::LoadSqliteTables()
             }
         }
 
-        AppendOutput( "Tables:" );
+        AppendOutput( tr( "Tables:" ) );
         TableIter iter = _tables.begin();
         while ( iter != _tables.end() )
         {
@@ -281,7 +281,7 @@ void QTSqlGen::LoadSqliteTables()
     {
         QSqlError se = query.lastError();
 
-        AppendOutput( "Exec Failed" );
+        AppendOutput( tr( "Exec Failed" ) );
         AppendOutput( se.text() );
     }
 }
@@ -323,7 +323,7 @@ void QTSqlGen::LoadSqliteColumns()
                     column._type = column.eUnknown;
 
                 if ( column._type == column.eUnknown )
-                    AppendOutput( "Unknown column type in Table:" + ( *iter )._name + " Column:" + column._name + " " + columnType );
+                    AppendOutput( tr( "Unknown column type in Table:" ) + ( *iter )._name + tr( " Column:" ) + column._name + " " + columnType );
                 else
                     ( *iter )._columns.push_back( column );
 
@@ -348,7 +348,7 @@ void QTSqlGen::LoadSqliteViews()
 
         _views.clear();
 
-        AppendOutput( "Views:" );
+        AppendOutput( tr( "Views:" ) );
         while ( query.next() )
         {
             QString name = query.value( namePosition ).toString();
@@ -364,7 +364,7 @@ void QTSqlGen::LoadSqliteViews()
 
                 _views.push_back( aView );
 
-                AppendOutput( "   View: " +  aView._name );
+                AppendOutput( tr( "   View: " ) +  aView._name );
             }
         }
     }
@@ -372,7 +372,7 @@ void QTSqlGen::LoadSqliteViews()
     {
         QSqlError se = query.lastError();
 
-        AppendOutput( "Exec Failed" );
+        AppendOutput( tr( "Exec Failed" ) );
         AppendOutput( se.text() );
     }
 }
@@ -548,7 +548,7 @@ void QTSqlGen::LoadODBCTables()
         }
     }
 
-    AppendOutput( "Tables:" );
+    AppendOutput( tr( "Tables:" ) );
     TableIter iter = _tables.begin();
     while ( iter != _tables.end() )
     {
@@ -611,7 +611,7 @@ void QTSqlGen::LoadODBCViews()
         }
     }
 
-    AppendOutput( "Views:" );
+    AppendOutput( tr( "Views:" ) );
     TableIter iter = _views.begin();
     while ( iter != _views.end() )
     {
@@ -674,7 +674,7 @@ void QTSqlGen::GenCode( Tables& tables, QString fileName )
                 AddHeaderFile( QString( ( *iter )._name + fileName + ".h" ) );
                 headerFile.write( header );
 
-                AppendOutput( headerFilePath + " written" );
+                AppendOutput( headerFilePath + tr( " written" ) );
                 headerFile.close();
             }
 
@@ -692,7 +692,7 @@ void QTSqlGen::GenCode( Tables& tables, QString fileName )
     {
         QFile::FileError fileError = templateFile.error();
 
-        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
     }
 
     templateFile.setFileName( ":/templates/Resources/" + fileName + ".cpp" );
@@ -730,7 +730,7 @@ void QTSqlGen::GenCode( Tables& tables, QString fileName )
                 AddSourceFile( ( *iter )._name + fileName + ".cpp" );
                 cppFile.write( sourceText );
 
-                AppendOutput( cppFilePath + " written" );
+                AppendOutput( cppFilePath + tr( " written" ) );
                 cppFile.close();
             }
 
@@ -746,7 +746,7 @@ void QTSqlGen::GenCode( Tables& tables, QString fileName )
     {
         QFile::FileError fileError = templateFile.error();
 
-        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
     }
 }
 
@@ -960,7 +960,7 @@ void QTSqlGen::GenRecordHeader( Table& table )
                 break;
 
             default:
-                AppendOutput( "Unknown Type Error Table:" + table._name + " Column:" + ( *column )._name );
+                AppendOutput( tr( "Unknown Type Error Table:" ) + table._name + tr( " Column:" ) + ( *column )._name );
                 break;
             }
 
@@ -986,12 +986,12 @@ void QTSqlGen::GenRecordHeader( Table& table )
 
             headerFile.write( header );
 
-            AppendOutput( headerFilePath + " written" );
+            AppendOutput( headerFilePath + tr( " written" ) );
             headerFile.close();
         }
         else
         {
-            AppendOutput( "Error opening: " + headerFilePath );
+            AppendOutput( tr( "Error opening: " ) + headerFilePath );
         }
 
         templateFile.close();
@@ -1000,7 +1000,7 @@ void QTSqlGen::GenRecordHeader( Table& table )
     {
         QFile::FileError fileError = templateFile.error();
 
-        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
     }
 }
 
@@ -1072,12 +1072,12 @@ void QTSqlGen::GenRecordSource( Table& table )
             AddSourceFile( table._name + "Record.cpp" );
             cppFile.write( cpp );
 
-            AppendOutput( cppFilePath + " written" );
+            AppendOutput( cppFilePath + tr( " written" ) );
             cppFile.close();
         }
         else
         {
-            AppendOutput( "Error opening: " + cppFilePath );
+            AppendOutput( tr( "Error opening: " ) + cppFilePath );
         }
 
         templateFile.close();
@@ -1086,7 +1086,7 @@ void QTSqlGen::GenRecordSource( Table& table )
     {
         QFile::FileError fileError = templateFile.error();
 
-        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
     }
 }
 
@@ -1130,12 +1130,12 @@ void QTSqlGen::GenSelectionHeader( Table& table )
 
             headerFile.write( header );
 
-            AppendOutput( headerFilePath + " written" );
+            AppendOutput( headerFilePath + tr( " written" ) );
             headerFile.close();
         }
         else
         {
-            AppendOutput( "Error opening: " + headerFilePath );
+            AppendOutput( tr( "Error opening: " )+ headerFilePath );
         }
 
         templateFile.close();
@@ -1144,7 +1144,7 @@ void QTSqlGen::GenSelectionHeader( Table& table )
     {
         QFile::FileError fileError = templateFile.error();
 
-        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
     }
 }
 
@@ -1173,12 +1173,12 @@ void QTSqlGen::GenSelectionSource( Table& table )
             AddSourceFile( table._name + "SelectionCriteria.cpp" );
             cppFile.write( cpp );
 
-            AppendOutput( cppFilePath + " written" );
+            AppendOutput( cppFilePath + tr( " written" ) );
             cppFile.close();
         }
         else
         {
-            AppendOutput( "Error opening: " + cppFilePath );
+            AppendOutput( tr( "Error opening: " ) + cppFilePath );
         }
 
         templateFile.close();
@@ -1187,7 +1187,7 @@ void QTSqlGen::GenSelectionSource( Table& table )
     {
         QFile::FileError fileError = templateFile.error();
 
-        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
     }
 }
 
@@ -1365,12 +1365,12 @@ void QTSqlGen::WriteStaticFiles()
 
                     srcFile.write( templateStr );
 
-                    AppendOutput( srcFilePath + " written" );
+                    AppendOutput( srcFilePath + tr( " written" ) );
                     srcFile.close();
                 }
                 else
                 {
-                    AppendOutput( "Error opening: " + srcFilePath );
+                    AppendOutput( tr( "Error opening: " )+ srcFilePath );
                 }
 
                 templateFile.close();
@@ -1379,7 +1379,7 @@ void QTSqlGen::WriteStaticFiles()
             {
                 QFile::FileError fileError = templateFile.error();
 
-                AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+                AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
             }
             staticFile++;
         }
@@ -1406,19 +1406,19 @@ void QTSqlGen::WriteHeaderFile()
 
             srcFile.write( templateStr );
 
-            AppendOutput( srcFilePath + " written" );
+            AppendOutput( srcFilePath + tr( " written" ) );
             srcFile.close();
         }
         else
         {
-            AppendOutput( "Error opening: " + srcFilePath );
+            AppendOutput( tr( "Error opening: " ) + srcFilePath );
         }
     }
     else
     {
         QFile::FileError fileError = templateFile.error();
 
-        AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+        AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
     }
 }
 
@@ -1446,21 +1446,21 @@ void QTSqlGen::WriteExportHeaderFile()
 
                 srcFile.write( templateStr );
 
-                AppendOutput( srcFilePath + " written" );
+                AppendOutput( srcFilePath + tr( " written" ) );
                 srcFile.close();
 
                 AddHeaderFile( _productInclude );
             }
             else
             {
-                AppendOutput( "Error opening: " + srcFilePath );
+                AppendOutput( tr( "Error opening: " ) + srcFilePath );
             }
         }
         else
         {
             QFile::FileError fileError = templateFile.error();
 
-            AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+            AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
         }
     }
 }
@@ -1494,19 +1494,19 @@ void QTSqlGen::WriteProject()
 
                 srcFile.write( templateStr );
 
-                AppendOutput( srcFilePath + " written" );
+                AppendOutput( srcFilePath + tr( " written" ) );
                 srcFile.close();
             }
             else
             {
-                AppendOutput( "Error opening: " + srcFilePath );
+                AppendOutput( tr( "Error opening: " ) + srcFilePath );
             }
         }
         else
         {
             QFile::FileError fileError = templateFile.error();
 
-            AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+            AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
         }
     }
 }
@@ -1691,12 +1691,12 @@ void QTSqlGen::WriteDatabaseFiles()
 
                 srcFile.write( templateStr );
 
-                AppendOutput( srcFilePath + " written" );
+                AppendOutput( srcFilePath + tr( " written" ) );
                 srcFile.close();
             }
             else
             {
-                AppendOutput( "Error opening: " + srcFilePath );
+                AppendOutput( tr( "Error opening: " ) + srcFilePath );
             }
 
             templateFile.close();
@@ -1705,7 +1705,7 @@ void QTSqlGen::WriteDatabaseFiles()
         {
             QFile::FileError fileError = templateFile.error();
 
-            AppendOutput( "Error opening: " + templateFile.fileName() + ":" + QString::number( fileError ) );
+            AppendOutput( tr( "Error opening: " ) + templateFile.fileName() + ":" + QString::number( fileError ) );
         }
 
         switch ( currentProject->_sourceType )
