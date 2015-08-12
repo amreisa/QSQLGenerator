@@ -134,11 +134,23 @@ void <%productName%>Database::CreateConnection( const QString& connectionName )
 
 void <%productName%>Database::BuildConnectionString()
 {
+#if QT_VERSION >= 0x050000
     _driverString.replace( "<%server%>", _host.toLatin1() );
     _driverString.replace( "<%port%>", _port.toLatin1() );
     _driverString.replace( "<%database%>", _databaseName.toLatin1() );
     _driverString.replace( "<%user%>", _userName.toLatin1() );
     _driverString.replace( "<%pass%>", _password.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+    _driverString.replace( "<%server%>", _host.toAscii() );
+    _driverString.replace( "<%port%>", _port.toAscii() );
+    _driverString.replace( "<%database%>", _databaseName.toAscii() );
+    _driverString.replace( "<%user%>", _userName.toAscii() );
+    _driverString.replace( "<%pass%>", _password.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
 	_connectionString = _driverString;
 }

@@ -662,8 +662,17 @@ void QTSqlGen::GenCode( Tables& tables, QString fileName )
 
             StandardReplacements( header );
 
+#if QT_VERSION >= 0x050000
             header.replace( "<%table%>", ( *iter )._name.toLatin1() );
             header.replace( "<%TABLE%>", tableNameDefine.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+            header.replace( "<%table%>", ( *iter )._name.toAscii() );
+            header.replace( "<%TABLE%>", tableNameDefine.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
             QFile headerFile;
             QString headerFilePath = _targetPath->text() + "/" + ( *iter )._name + fileName + ".h";
@@ -711,15 +720,33 @@ void QTSqlGen::GenCode( Tables& tables, QString fileName )
 
             StandardReplacements( sourceText );
 
+#if QT_VERSION >= 0x050000
             sourceText.replace( "<%table%>", ( *iter )._name.toLatin1() );
             sourceText.replace( "<%TABLE%>", tableNameDefine.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+            sourceText.replace( "<%table%>", ( *iter )._name.toAscii() );
+            sourceText.replace( "<%TABLE%>", tableNameDefine.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
             QString createStatement( ( *iter )._createStatement );
             createStatement.replace( "\"", "" );
             createStatement.replace( "\n", " " );
             createStatement.replace( "\r", " " );
             createStatement.replace( "  ", " " );
+
+#if QT_VERSION >= 0x050000
             sourceText.replace( "<%createStmt%>", createStatement.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+            sourceText.replace( "<%createStmt%>", createStatement.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
             QFile cppFile;
             QString cppFilePath = _targetPath->text() + "/" + ( *iter )._name + fileName + ".cpp";
@@ -809,8 +836,17 @@ QString QTSqlGen::GenerateFieldType( const QString& columnName, const QString& n
         fieldTypeTemplate = templateFile.readAll();
 
         fieldTypeTemplate.replace( "<%fieldType%>", fieldType );
+#if QT_VERSION >= 0x050000
         fieldTypeTemplate.replace( "<%uName%>", uName.toLatin1() );
         fieldTypeTemplate.replace( "<%name%>", columnName.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        fieldTypeTemplate.replace( "<%uName%>", uName.toAscii() );
+        fieldTypeTemplate.replace( "<%name%>", columnName.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         StandardReplacements( fieldTypeTemplate );
 
@@ -878,9 +914,19 @@ QString QTSqlGen::GenerateSelector( const QString& name, const Column::Type type
     {
         accessor = templateFile.readAll();
 
+#if QT_VERSION >= 0x050000
         accessor.replace( QByteArray( "<%uName%>" ), uName.toLatin1() );
         accessor.replace( QByteArray( "<%lName%>" ), lName.toLatin1() );
         accessor.replace( QByteArray( "<%name%>" ), name.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        accessor.replace( QByteArray( "<%uName%>" ), uName.toAscii() );
+        accessor.replace( QByteArray( "<%lName%>" ), lName.toAscii() );
+        accessor.replace( QByteArray( "<%name%>" ), name.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         StandardReplacements( accessor );
     }
@@ -971,10 +1017,21 @@ void QTSqlGen::GenRecordHeader( Table& table )
 
         StandardReplacements( header );
 
+#if QT_VERSION >= 0x050000
         header.replace( "<%table%>", tableName.toLatin1() );
         header.replace( "<%TABLE%>", TABLENAME.toLatin1() );
         header.replace( "<%fieldEnum%>", fieldEnums.toLatin1() );
         header.replace( "<%accessors%>", accessors.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        header.replace( "<%table%>", tableName.toAscii() );
+        header.replace( "<%TABLE%>", TABLENAME.toAscii() );
+        header.replace( "<%fieldEnum%>", fieldEnums.toAscii() );
+        header.replace( "<%accessors%>", accessors.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         QString headerFilePath = _targetPath->text() + "/" + table._name + "Record.h";
         QFile headerFile;
@@ -1055,13 +1112,33 @@ void QTSqlGen::GenRecordSource( Table& table )
 
         StandardReplacements( cpp );
 
+#if QT_VERSION >= 0x050000
         cpp.replace( "<%table%>", tableName.toLatin1() );
         cpp.replace( "<%fields%>", fields.toLatin1() );
         cpp.replace( "<%binds%>", binds.toLatin1() );
         cpp.replace( "<%accessors%>", accessors.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        cpp.replace( "<%table%>", tableName.toAscii() );
+        cpp.replace( "<%fields%>", fields.toAscii() );
+        cpp.replace( "<%binds%>", binds.toAscii() );
+        cpp.replace( "<%accessors%>", accessors.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
+
         cpp.replace( "<%fieldCount%>", QByteArray::number( table._columns.size() ) );
 
+#if QT_VERSION >= 0x050000
         cpp.replace( "<%propertyDataTypes%>", propertyDataTypes.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        cpp.replace( "<%propertyDataTypes%>", propertyDataTypes.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         QString cppFilePath = _targetPath->text() + "/" + table._name + "Record.cpp";
         QFile cppFile;
@@ -1116,9 +1193,19 @@ void QTSqlGen::GenSelectionHeader( Table& table )
 
         StandardReplacements( header );
 
+#if QT_VERSION >= 0x050000
         header.replace( "<%table%>", tableName.toLatin1() );
         header.replace( "<%TABLE%>", TABLENAME.toLatin1() );
         header.replace( "<%accessors%>", accessors.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        header.replace( "<%table%>", tableName.toAscii() );
+        header.replace( "<%TABLE%>", TABLENAME.toAscii() );
+        header.replace( "<%accessors%>", accessors.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         QString headerFilePath = _targetPath->text() + "/" + table._name + "SelectionCriteria.h";
         QFile headerFile;
@@ -1162,7 +1249,15 @@ void QTSqlGen::GenSelectionSource( Table& table )
 
         StandardReplacements( cpp );
 
+#if QT_VERSION >= 0x050000
         cpp.replace( "<%table%>", tableName.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        cpp.replace( "<%table%>", tableName.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         QString cppFilePath = _targetPath->text() + "/" + table._name + "SelectionCriteria.cpp";
         QFile cppFile;
@@ -1216,10 +1311,21 @@ QString QTSqlGen::GenerateAccessor( const QString& name, const QString& type )
         outType.replace( QString( "&" ), QString( "" ) );
         outType.replace( QString( "const " ), QString( "" ) );
 
+#if QT_VERSION >= 0x050000
         accessor.replace( QByteArray( "<%uName%>" ), uName.toLatin1() );
         accessor.replace( QByteArray( "<%inType%>" ), inType.toLatin1() );
         accessor.replace( QByteArray( "<%name%>" ), lName.toLatin1() );
         accessor.replace( QByteArray( "<%outType%>" ), outType.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        accessor.replace( QByteArray( "<%uName%>" ), uName.toAscii() );
+        accessor.replace( QByteArray( "<%inType%>" ), inType.toAscii() );
+        accessor.replace( QByteArray( "<%name%>" ), lName.toAscii() );
+        accessor.replace( QByteArray( "<%outType%>" ), outType.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         StandardReplacements( accessor );
     }
@@ -1285,9 +1391,19 @@ QString QTSqlGen::GenerateAccessorSource( const QString& tableName, const QStrin
     {
         accessor = templateFile.readAll();
 
+#if QT_VERSION >= 0x050000
         accessor.replace( QByteArray( "<%uName%>" ), uName.toLatin1() );
         accessor.replace( QByteArray( "<%tableName%>" ), tableName.toLatin1() );
         accessor.replace( QByteArray( "<%name%>" ), lName.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        accessor.replace( QByteArray( "<%uName%>" ), uName.toAscii() );
+        accessor.replace( QByteArray( "<%tableName%>" ), tableName.toAscii() );
+        accessor.replace( QByteArray( "<%name%>" ), lName.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
         StandardReplacements( accessor );
     }
@@ -1314,8 +1430,17 @@ QString QTSqlGen::GenerateTableRoutine( const Table& table )
 
         StandardReplacements( tableRoutine );
 
+#if QT_VERSION >= 0x050000
         tableRoutine.replace( "<%tableName%>", tableName.toLatin1() );
         tableRoutine.replace( "<%variableName%>", variableName.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        tableRoutine.replace( "<%tableName%>", tableName.toAscii() );
+        tableRoutine.replace( "<%variableName%>", variableName.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
     }
 
@@ -1333,7 +1458,7 @@ void QTSqlGen::WriteStaticFiles()
         QStringList::iterator staticFile;
 
         staticFiles << ":/templates/Resources/RecordBase.h"
-                << ":/templates/Resources/RecordBase.cpp";
+                    << ":/templates/Resources/RecordBase.cpp";
 
         if ( currentProject->_writeProject == true )
             staticFiles << ":/templates/Resources/CreateVCProj.bat";
@@ -1486,11 +1611,17 @@ void QTSqlGen::WriteProject()
             {
                 StandardReplacements( templateStr );
 
-                templateStr.replace( QByteArray( "<%linkage%>" ),
-                        currentProject->_dynamicLibrary ? "dll" : "staticlib" );
+                templateStr.replace( QByteArray( "<%linkage%>" ), currentProject->_dynamicLibrary ? "dll" : "staticlib" );
 
-                templateStr.replace( QByteArray( "<%linkagedef%>" ),
-                        currentProject->_dynamicLibrary ? QByteArray( "BASE_DLL " ) + _dllExportDefine.toLatin1() : "BASE_STATIC" );
+#if QT_VERSION >= 0x050000
+                templateStr.replace( QByteArray( "<%linkagedef%>" ), currentProject->_dynamicLibrary ? QByteArray( "BASE_DLL " ) + _dllExportDefine.toLatin1() : "BASE_STATIC" );
+#else
+#if QT_VERSION >= 0x040000
+                templateStr.replace( QByteArray( "<%linkagedef%>" ), currentProject->_dynamicLibrary ? QByteArray( "BASE_DLL " ) + _dllExportDefine.toAscii() : "BASE_STATIC" );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
                 srcFile.write( templateStr );
 
@@ -1540,6 +1671,7 @@ void QTSqlGen::StandardReplacements( QByteArray& replaceMe )
 {
     QString PRODUCTNAME = _productName.toUpper();
 
+#if QT_VERSION >= 0x050000
     replaceMe.replace( "<%PRODUCTNAME%>", PRODUCTNAME.toLatin1() );
     replaceMe.replace( "<%productInclude%>", _productInclude.toLatin1() );
     replaceMe.replace( "<%productName%>", _productName.toLatin1() );
@@ -1552,6 +1684,24 @@ void QTSqlGen::StandardReplacements( QByteArray& replaceMe )
     replaceMe.replace( "<%headerFiles%>", _headerFiles.toLatin1() );
     replaceMe.replace( "<%date%>", _now.toString().toLatin1() );
     replaceMe.replace( "<%applicationName%>", QCoreApplication::applicationName().toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+    replaceMe.replace( "<%PRODUCTNAME%>", PRODUCTNAME.toAscii() );
+    replaceMe.replace( "<%productInclude%>", _productInclude.toAscii() );
+    replaceMe.replace( "<%productName%>", _productName.toAscii() );
+    replaceMe.replace( "<%projectGUID%>", _projectGUID.toAscii() );
+    replaceMe.replace( "<%dllExport%>", _dllExport.toAscii() );
+    replaceMe.replace( "<%dllExportDefine%>", _dllExportDefine.toAscii() );
+    replaceMe.replace( "<%includeFiles%>", _headerFiles.toAscii() );
+    replaceMe.replace( "<%sources%>", _sources.toAscii() );
+    replaceMe.replace( "<%headers%>", _headers.toAscii() );
+    replaceMe.replace( "<%headerFiles%>", _headerFiles.toAscii() );
+    replaceMe.replace( "<%date%>", _now.toString().toAscii() );
+    replaceMe.replace( "<%applicationName%>", QCoreApplication::applicationName().toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
     QString productNamespace = _namespaceEdit->text();
 
@@ -1561,14 +1711,31 @@ void QTSqlGen::StandardReplacements( QByteArray& replaceMe )
         namespaceStart += productNamespace;
         namespaceStart += "\n{\n";
 
+#if QT_VERSION >= 0x050000
         replaceMe.replace( "<%namespaceStart%>", namespaceStart.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        replaceMe.replace( "<%namespaceStart%>", namespaceStart.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
         replaceMe.replace( "<%namespaceEnd%>", "\n}\n" );
     }
     else
     {
         // Replace anyways, as productNamespace is an empty string
+#if QT_VERSION >= 0x050000
         replaceMe.replace( "<%namespaceStart%>", productNamespace.toLatin1() );
         replaceMe.replace( "<%namespaceEnd%>", productNamespace.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+        replaceMe.replace( "<%namespaceStart%>", productNamespace.toAscii() );
+        replaceMe.replace( "<%namespaceEnd%>", productNamespace.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
     }
 }
 
@@ -1583,7 +1750,7 @@ void QTSqlGen::on__aboutButton_clicked()
 void QTSqlGen::on__dynamicRadio_toggled
 (
         bool state
-)
+        )
 {
     SqlProject* currentProject = GetProject();
 
@@ -1596,7 +1763,7 @@ void QTSqlGen::on__dynamicRadio_toggled
 void QTSqlGen::on__staticRadio_toggled
 (
         bool state
-)
+        )
 {
     SqlProject* currentProject = GetProject();
 
@@ -1683,10 +1850,22 @@ void QTSqlGen::WriteDatabaseFiles()
                     view++;
                 }
 
+#if QT_VERSION >= 0x050000
                 templateStr.replace( "<%tables%>", tables.toLatin1() );
                 templateStr.replace( "<%views%>", views.toLatin1() );
                 templateStr.replace( "<%tablePtrs%>", tablePtrs.toLatin1() );
                 templateStr.replace( "<%includes%>", includes.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+                templateStr.replace( "<%tables%>", tables.toAscii() );
+                templateStr.replace( "<%views%>", views.toAscii() );
+                templateStr.replace( "<%tablePtrs%>", tablePtrs.toAscii() );
+                templateStr.replace( "<%includes%>", includes.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
+
                 StandardReplacements( templateStr );
 
                 srcFile.write( templateStr );
@@ -1782,9 +1961,19 @@ void QTSqlGen::WriteDatabaseFiles()
 
                 StandardReplacements( templateStr );
 
+#if QT_VERSION >= 0x050000
                 templateStr.replace( "<%destructors%>", destructors.toLatin1() );
                 templateStr.replace( "<%initializers%>", statics.toLatin1() );
                 templateStr.replace( "<%tableRoutines%>", tableRoutines.toLatin1() );
+#else
+#if QT_VERSION >= 0x040000
+                templateStr.replace( "<%destructors%>", destructors.toAscii() );
+                templateStr.replace( "<%initializers%>", statics.toAscii() );
+                templateStr.replace( "<%tableRoutines%>", tableRoutines.toAscii() );
+#else
+#error "This code work Qt 4.x and Qt 5.x only."
+#endif
+#endif
 
                 srcFile.write( templateStr );
 
