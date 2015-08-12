@@ -33,14 +33,12 @@
 class <%dllExport%> <%record%>View
 {
 public:
-	<%record%>View(void);
-	virtual ~<%record%>View(void);
+    <%record%>View( void );
+    virtual ~<%record%>View( void );
 
-	bool Get(QList<<%record%>Record>& list, <%record%>Record& ent, QString sort="");
+    bool Get( QList<<%record%>Record>& list, <%record%>Record& ent, QString sort = "" );
 
-	QDomDocument& GetDom(<%record%>Record& ent,
-		QString docName, QString sort="", bool	preferAttrib = true, bool skipEmpty = true,
-		bool upperCase = false);
+    QDomDocument& GetDom( <%record%>Record& ent, QString docName, QString sort = "", bool	preferAttrib = true, bool skipEmpty = true, bool upperCase = false );
 private:
 	QDomDocument*				_dom;
 	QMutex						_mutex;

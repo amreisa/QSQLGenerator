@@ -42,24 +42,24 @@ class <%dllExport%> <%table%>Table
 friend class <%productName%>Database;
 
 public:
-	bool Create(void);
+    bool Create( void );
 
-	bool Add(<%table%>Record& ent);
-	bool AddOrUpdate(<%table%>Record& ent);
-	bool ClearTable(void);
-	bool Delete(quint32 key);
+    bool Add( <%table%>Record& ent );
+    bool AddOrUpdate( <%table%>Record& ent );
+    bool ClearTable( void );
+    bool Delete( quint32 key );
 
-	bool Get(QList<<%table%>Record>& recordList, <%table%>SelectionCriteria& constraints);
-	bool Get(QList<QVariant>& columnList, const QString& columnName, <%table%>SelectionCriteria& constraints);
-	bool Get(quint32 key, <%table%>Record& record);
-	quint32 GetKey(<%table%>Record& record, const QString& propName, const QString& propValue);
+    bool Get( QList<<%table%>Record>& recordList, <%table%>SelectionCriteria& constraints );
+    bool Get( QList<QVariant>& columnList, const QString& columnName, <%table%>SelectionCriteria& constraints );
+    bool Get( quint32 key, <%table%>Record& record );
+    quint32 GetKey( <%table%>Record& record, const QString& propName, const QString& propValue );
 
-	bool Update(quint32 key, const QHash<QString, QVariant>& updates);
-	bool Update(<%table%>Record& record);
+    bool Update( quint32 key, const QHash<QString, QVariant>& updates );
+    bool Update( <%table%>Record& record );
 
 private:
-	<%table%>Table(<%productName%>Database* database);
-	virtual ~<%table%>Table(void);
+    <%table%>Table( <%productName%>Database* database );
+    virtual ~<%table%>Table( void );
 
 	<%productName%>Database*	_database;
 	static QMutex				_mutex;

@@ -39,27 +39,23 @@ RecordBase::RecordBase() :
 {
 }
 
-RecordBase::RecordBase
-(
-	const QString& table, 
-	quint32 fieldCount
-) :
+RecordBase::RecordBase( const QString& table, quint32 fieldCount ) :
 	_table(table),
 	_xmlDoc(NULL)
 {
-	_recordData.resize(fieldCount);
+    _recordData.resize( fieldCount );
 	
-	for (quint32 i(0); i < fieldCount; i++) 
+    for ( quint32 i( 0 ); i < fieldCount; i++ )
 	{
-		if (i == 0)
+        if ( i == 0 )
 		{
 			_recordData[i]._type = eInteger;
-			_recordData[i]._value = QVariant((quint32) 0);
+            _recordData[i]._value = QVariant( ( quint32 )0 );
 		}
 		else
 		{
 			_recordData[i]._type = eString;
-			_recordData[i]._value = QVariant("");
+            _recordData[i]._value = QVariant( "" );
 		}
 
 		_recordData[i]._changed = false;
@@ -67,16 +63,13 @@ RecordBase::RecordBase
 }
 
 // copy const
-RecordBase::RecordBase 
-(
-	const RecordBase& copyMe
-) :
-	_table(copyMe._table),
-	_xmlDoc(NULL)
+RecordBase::RecordBase ( const RecordBase& copyMe ) :
+    _table( copyMe._table ),
+    _xmlDoc( NULL )
 {
-	_recordData.resize(copyMe._recordData.size());
+    _recordData.resize( copyMe._recordData.size() );
 
-	for (quint32 i(0); i < Count(); i++) 
+    for ( quint32 i( 0 ); i < Count(); i++ )
 	{
 		_recordData[i]._field = copyMe._recordData[i]._field;
 		_recordData[i]._type = copyMe._recordData[i]._type;

@@ -1,7 +1,4 @@
-void <%tableName%>Record::Set<%uName%>
-(
-	const QByteArray& <%name%>
-)
+void <%tableName%>Record::Set<%uName%>( const QByteArray& <%name%> )
 {
 	_recordData[f_<%uName%>]._value = <%name%>;
 	_recordData[f_<%uName%>]._changed = true;

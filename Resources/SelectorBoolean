@@ -1,15 +1,15 @@
 	// Setters for column <%name%>
-	void <%uName%>EqualsTo(bool <%lName%>)
+        void <%uName%>EqualsTo( bool <%lName%> )
 	{
-		AppendFilterCondition("<%name%> = " + (<%lName%> == true) ? "1" : "0");
+                AppendFilterCondition( "<%name%> = " + (<%lName%> == true) ? "1" : "0" );
 	}
 
-	void <%uName%>NotEqualsTo(bool <%lName%>)
+        void <%uName%>NotEqualsTo( bool <%lName%> )
 	{
-		AppendFilterCondition("<%name%> <> " + (<%lName%> == true) ? "1" : "0");
+                AppendFilterCondition( "<%name%> <> " + (<%lName%> == true) ? "1" : "0" );
 	}
 
-	void <%uName%>OrderBy(bool ascending)
+        void <%uName%>OrderBy( bool ascending )
 	{
-		AppendSortCriteria("<%name%>", ascending);
+                AppendSortCriteria( "<%name%>", ascending );
 	}

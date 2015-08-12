@@ -1,7 +1,4 @@
-void <%tableName%>Record::Set<%uName%>
-(
-	const QDateTime& <%name%>
-)
+void <%tableName%>Record::Set<%uName%>( const QDateTime& <%name%> )
 {
 	_recordData[f_<%uName%>]._value = EncodeDateTime(<%name%>);
 	_recordData[f_<%uName%>]._changed = true;

@@ -41,27 +41,27 @@ class <%dllExport%> <%table%>SelectionCriteria
 {
 public:
 	<%table%>SelectionCriteria();
-	<%table%>SelectionCriteria(const <%table%>SelectionCriteria& copyMe);
+    <%table%>SelectionCriteria( const <%table%>SelectionCriteria& copyMe );
 	virtual ~<%table%>SelectionCriteria();
 
-	QString GetFilterStatement(void)
+    QString GetFilterStatement( void )
 	{ 
-		while (_levels > 0)
+        while ( _levels > 0 )
 			EndPrecedence();
 
 		return _filterStatement; 
 	}
 
-	QString GetOrderStatement(void)
+    QString GetOrderStatement( void )
 		{ return _orderStatement; }
 
-	void And(void);
-	void Or(void);
+    void And( void );
+    void Or( void );
 
-	void BeginPrecedence(void);
-	void EndPrecedence(void);
+    void BeginPrecedence( void );
+    void EndPrecedence( void );
 
-	void Reset(void)
+    void Reset( void )
 	{
 		_levels = 0;
 		_filterConjunction = false;
@@ -72,8 +72,8 @@ public:
 <%accessors%>
 
 private:
-	void AppendFilterCondition(const QString& filterCondition);
-	void AppendSortCriteria(const QString& sortCriteria, bool ascending);
+    void AppendFilterCondition( const QString& filterCondition );
+    void AppendSortCriteria( const QString& sortCriteria, bool ascending );
 
 	quint32				_levels;
 	bool				_filterConjunction;

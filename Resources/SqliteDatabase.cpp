@@ -30,7 +30,7 @@
 
 #include <QCoreApplication>
 <%namespaceStart%>
-static quint32 gConnectionCount(1); 
+static quint32 gConnectionCount( 1 );
 
 <%productName%>Database::<%productName%>Database() :
 <%initializers%>
@@ -43,7 +43,7 @@ static quint32 gConnectionCount(1);
 
 <%destructors%>
 
-	QSqlDatabase::removeDatabase(_connectionName);
+    QSqlDatabase::removeDatabase( _connectionName );
 }
 
 void <%productName%>Database::CreateConnection
@@ -51,19 +51,19 @@ void <%productName%>Database::CreateConnection
 	const QString& connectionName
 )
 {
-	_connectionName = connectionName + QString::number(gConnectionCount++);
-	_database = QSqlDatabase::addDatabase("QSQLITE", _connectionName);
+    _connectionName = connectionName + QString::number( gConnectionCount++ );
+    _database = QSqlDatabase::addDatabase( "QSQLITE", _connectionName );
 }
 
 bool <%productName%>Database::Open()
 {
-	bool result(false);
+    bool result( false );
 
-	if ((result = _database.isOpen()) == false)
+    if ( ( result = _database.isOpen() ) == false )
 	{
-		if (_filePath.size())
+        if ( _filePath.size() )
 		{
-			_database.setDatabaseName(_filePath);
+            _database.setDatabaseName( _filePath );
 			
 			result = _database.open();
 		}
@@ -74,15 +74,15 @@ bool <%productName%>Database::Open()
 
 void <%productName%>Database::Close()
 {
-	if (IsOpen())
+    if ( IsOpen() )
 		_database.close();
 }
 
 bool <%productName%>Database::IsOpen()
 {
-	bool result(false);
+    bool result( false );
 
-	if (_database.isValid())
+    if ( _database.isValid() )
 		result = _database.isOpen();
 
 	return result;

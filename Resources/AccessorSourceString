@@ -1,7 +1,4 @@
-void <%tableName%>Record::Set<%uName%>
-(
-	const QString& <%name%>
-)
+void <%tableName%>Record::Set<%uName%>( const QString& <%name%> )
 {
 	_recordData[f_<%uName%>]._value = <%name%>;
 	_recordData[f_<%uName%>]._changed = true;

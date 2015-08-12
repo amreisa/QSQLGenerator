@@ -1,35 +1,35 @@
 	// Setters for column <%name%>
-	void <%uName%>EqualsTo(const QByteArray& <%lName%>)
+        void <%uName%>EqualsTo( const QByteArray& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> = '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> = '" + <%lName%> + "'" );
 	}
 
-	void <%uName%>NotEqualsTo(const QByteArray& <%lName%>)
+        void <%uName%>NotEqualsTo( const QByteArray& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> <> '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> <> '" + <%lName%> + "'" );
 	}
 
-	void <%uName%>LessThan(const QByteArray& <%lName%>)
+        void <%uName%>LessThan( const QByteArray& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> < '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> < '" + <%lName%> + "'" );
 	}
 
-	void <%uName%>GreaterThan(const QByteArray& <%lName%>)
+        void <%uName%>GreaterThan( const QByteArray& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> > '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> > '" + <%lName%> + "'" );
 	}
 
-	void <%uName%>LessThanOrEqualTo(const QByteArray& <%lName%>)
+        void <%uName%>LessThanOrEqualTo( const QByteArray& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> <= '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> <= '" + <%lName%> + "'" );
 	}
 
-	void <%uName%>GreaterThanOrEqualTo(const QByteArray& <%lName%>)
+        void <%uName%>GreaterThanOrEqualTo( const QByteArray& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> >= '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> >= '" + <%lName%> + "'" );
 	}
 
-	void <%uName%>OrderBy(bool ascending)
+        void <%uName%>OrderBy( bool ascending )
 	{
-		AppendSortCriteria("<%name%>", ascending);
+                AppendSortCriteria( "<%name%>", ascending );
 	}

@@ -1,7 +1,4 @@
-void <%tableName%>Record::Set<%uName%>
-(
-	const QUuid& <%name%>
-)
+void <%tableName%>Record::Set<%uName%>( const QUuid& <%name%> )
 {
 	_recordData[f_<%uName%>]._value = EncodeGuid(<%name%>);
 	_recordData[f_<%uName%>]._changed = true;

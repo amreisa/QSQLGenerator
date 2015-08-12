@@ -28,8 +28,8 @@
 // Changes will be overwritten.
 <%namespaceStart%>
 <%table%>SelectionCriteria::<%table%>SelectionCriteria() :
-	_filterConjunction(false),
-	_levels(0)
+    _filterConjunction( false ),
+    _levels( 0 )
 {
 }
 
@@ -37,10 +37,7 @@
 {
 }
 
-<%table%>SelectionCriteria::<%table%>SelectionCriteria
-(
-	const <%table%>SelectionCriteria& copyMe
-)
+<%table%>SelectionCriteria::<%table%>SelectionCriteria( const <%table%>SelectionCriteria& copyMe )
 {
 	_levels = copyMe._filterConjunction;
 	_filterConjunction = copyMe._filterConjunction;
@@ -62,12 +59,9 @@
 				}
 				*/
 
-void <%table%>SelectionCriteria::AppendFilterCondition
-(
-	const QString& filterCondition
-)
+void <%table%>SelectionCriteria::AppendFilterCondition( const QString& filterCondition )
 {
-	if (_filterConjunction == false)
+    if ( _filterConjunction == false )
 		And();
 
 	_filterStatement += filterCondition;
@@ -75,27 +69,23 @@ void <%table%>SelectionCriteria::AppendFilterCondition
 	_filterConjunction = false;
 }
 
-void <%table%>SelectionCriteria::AppendSortCriteria
-(
-	const QString& sortCriteria,
-	bool ascending
-)
+void <%table%>SelectionCriteria::AppendSortCriteria( const QString& sortCriteria, bool ascending )
 {
-	if (_orderStatement.indexOf(sortCriteria) == -1)
+    if ( _orderStatement.indexOf(sortCriteria) == -1 )
 	{
-		if (_orderStatement.size())
-			_orderStatement.append(", "); 
+        if ( _orderStatement.size() )
+            _orderStatement.append( ", " );
 
 		_orderStatement += sortCriteria;
 
-		if (ascending == false)
+        if ( ascending == false )
 			_orderStatement += " desc";
 	}
 }
 
 void <%table%>SelectionCriteria::And()
 {
-	if (_filterConjunction == false && _filterStatement.size() > 0)
+    if ( _filterConjunction == false && _filterStatement.size() > 0 )
 	{
 		_filterStatement += " and "; 
 		_filterConjunction = true;
@@ -104,7 +94,7 @@ void <%table%>SelectionCriteria::And()
 
 void <%table%>SelectionCriteria::Or()
 {	
-	if (_filterConjunction == false && _filterStatement.size() > 0)
+    if ( _filterConjunction == false && _filterStatement.size() > 0 )
 	{
 		_filterStatement += " or "; 
 		_filterConjunction = true;

@@ -37,13 +37,13 @@ class <%dllExport%> <%table%>Record :
 	public RecordBase
 {
 public:
-	<%table%>Record(void);
-	<%table%>Record(const <%table%>Record& copyMe);
-	virtual ~<%table%>Record(void);
+    <%table%>Record( void );
+    <%table%>Record( const <%table%>Record& copyMe );
+    virtual ~<%table%>Record( void );
 
-	<%table%>Record& operator=(const <%table%>Record& assignMe);
+    <%table%>Record& operator=( const <%table%>Record& assignMe );
 
-	void FieldList(QStringList& fields);
+    void FieldList( QStringList& fields );
 
 	enum Fields 
 	{
@@ -51,8 +51,8 @@ public:
 	};
 
 <%accessors%>
-	QString GetCreateStatement(void);
-	static QString GetInsertStatement(void)
+    QString GetCreateStatement( void );
+    static QString GetInsertStatement( void )
 		{ return <%table%>Record::_insertStatement; }
 
 private:

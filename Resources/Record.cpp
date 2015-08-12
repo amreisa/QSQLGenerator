@@ -37,7 +37,7 @@ QString <%table%>Record::_insertStatement
 );
 
 <%table%>Record::<%table%>Record(): 
-	RecordBase("<%table%>", <%fieldCount%>)
+    RecordBase( "<%table%>", <%fieldCount%> )
 {
 <%propertyDataTypes%>
 }
@@ -50,32 +50,26 @@ QString <%table%>Record::_insertStatement
 (
 	const <%table%>Record& copyMe
 ):
-	RecordBase(copyMe)
+    RecordBase( copyMe )
 {
 }
 
-<%table%>Record& <%table%>Record::operator=
-(
-	const <%table%>Record& assignMe
-)
+<%table%>Record& <%table%>Record::operator=( const <%table%>Record& assignMe )
 {
-	RecordBase::AssignMe(&assignMe);
+    RecordBase::AssignMe( &assignMe );
 
 	return *this;
 }
 
-void <%table%>Record::FieldList
-(
-	QStringList& stringList
-)
+void <%table%>Record::FieldList( QStringList& stringList )
 {
 	quint32 i(0);
 
 	stringList.clear();
 
-	while (i < Count())
+    while ( i < Count() )
 	{
-		stringList.push_back(Field(i));
+        stringList.push_back( Field( i ) );
 		i++;
 	}
 }

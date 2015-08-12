@@ -1,53 +1,53 @@
 	// Setters for column <%name%>
-	void <%uName%>EqualsTo(const QUuid& <%lName%>)
+        void <%uName%>EqualsTo( const QUuid& <%lName%> )
 	{	
-		QString temp(<%lName%>.toString());
+                QString temp( <%lName%>.toString() );
 
-		temp.remove(QChar('{')).remove(QChar('}'));
+                temp.remove( QChar( '{' ) ).remove( QChar('}' ) );
 		AppendFilterCondition("<%name%> = '" + temp + "'");
 	}
 
-	void <%uName%>NotEqualsTo(const QUuid& <%lName%>)
+        void <%uName%>NotEqualsTo( const QUuid& <%lName%> )
 	{
-		QString temp(<%lName%>.toString());
+                QString temp( <%lName%>.toString() );
 
-		temp.remove(QChar('{')).remove(QChar('}'));
-		AppendFilterCondition("<%name%> <> '" + temp + "'");
+                temp.remove( QChar( '{' ) ).remove( QChar( '}' ) );
+                AppendFilterCondition( "<%name%> <> '" + temp + "'" );
 	}
 
-	void <%uName%>LessThan(const QUuid& <%lName%>)
+        void <%uName%>LessThan( const QUuid& <%lName%> )
 	{
-		QString temp(<%lName%>.toString());
+                QString temp( <%lName%>.toString() );
 
-		temp.remove(QChar('{')).remove(QChar('}'));
-		AppendFilterCondition("<%name%> < '" + temp + "'");
+                temp.remove( QChar( '{' ) ).remove( QChar( '}' ) );
+                AppendFilterCondition( "<%name%> < '" + temp + "'" );
 	}
 
-	void <%uName%>GreaterThan(const QUuid& <%lName%>)
+        void <%uName%>GreaterThan( const QUuid& <%lName%> )
 	{
-		QString temp(<%lName%>.toString());
+                QString temp( <%lName%>.toString() );
 
-		temp.remove(QChar('{')).remove(QChar('}'));
-		AppendFilterCondition("<%name%> > '" + temp + "'");
+                temp.remove( QChar('{') ).remove( QChar( '}' ) );
+                AppendFilterCondition( "<%name%> > '" + temp + "'" );
 	}
 
-	void <%uName%>LessThanOrEqualTo(const QUuid& <%lName%>)
+        void <%uName%>LessThanOrEqualTo( const QUuid& <%lName%> )
 	{
-		QString temp(<%lName%>.toString());
+                QString temp( <%lName%>.toString() );
 
-		temp.remove(QChar('{')).remove(QChar('}'));
-		AppendFilterCondition("<%name%> <= '" + temp + "'");
+                temp.remove( QChar( '{') ).remove( QChar( '}' ) );
+                AppendFilterCondition( "<%name%> <= '" + temp + "'" );
 	}
 
-	void <%uName%>GreaterThanOrEqualTo(const QUuid& <%lName%>)
+        void <%uName%>GreaterThanOrEqualTo( const QUuid& <%lName%> )
 	{
-		QString temp(<%lName%>.toString());
+                QString temp( <%lName%>.toString() );
 
-		temp.remove(QChar('{')).remove(QChar('}'));
-		AppendFilterCondition("<%name%> >= '" + temp + "'");
+                temp.remove( QChar( '{' ) ).remove( QChar( '}' ) );
+                AppendFilterCondition( "<%name%> >= '" + temp + "'" );
 	}
 
-	void <%uName%>OrderBy(bool ascending)
+        void <%uName%>OrderBy( bool ascending )
 	{
-		AppendSortCriteria("<%name%>", ascending);
+                AppendSortCriteria( "<%name%>", ascending );
 	}

@@ -39,32 +39,32 @@ public:
 	<%productName%>Database();
 	virtual ~<%productName%>Database();
 
-	void CreateConnection(const QString& connectionName);
+    void CreateConnection( const QString& connectionName );
 
-	void SetFilePath(const QString& filePath)
+    void SetFilePath( const QString& filePath )
 		{ _filePath = filePath; }
-	QString FilePath(void)
+    QString FilePath( void )
 		{ return _filePath; }
 
-	QSqlDatabase Database(void)
+    QSqlDatabase Database( void )
 		{ return _database; }
 
-	bool Open(void);
-	void Close(void);
+    bool Open( void );
+    void Close( void );
 
-	bool IsOpen(void);
+    bool IsOpen( void );
 
-	bool BeginTransaction(void)
+    bool BeginTransaction( void )
 	{
 		return _database.transaction();
 	}
 
-	bool CommitTransaction(void)
+    bool CommitTransaction( void )
 	{
 		return _database.commit();
 	}
 
-	bool RollbackTransaction(void)
+    bool RollbackTransaction( void )
 	{
 		return _database.rollback();
 	}

@@ -1,35 +1,35 @@
 	// Setters for column <%name%>
-	void <%uName%>EqualsTo(const QDate& <%lName%>)
+        void <%uName%>EqualsTo( const QDate& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> = '" + <%lName%>.toString() + "'");
+                AppendFilterCondition( "<%name%> = '" + <%lName%>.toString() + "'" );
 	}
 
-	void <%uName%>NotEqualsTo(const QDate& <%lName%>)
+        void <%uName%>NotEqualsTo( const QDate& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> <> '" + <%lName%>.toString() + "'");
+                AppendFilterCondition( "<%name%> <> '" + <%lName%>.toString() + "'" );
 	}
 
-	void <%uName%>LessThan(const QDate& <%lName%>)
+        void <%uName%>LessThan( const QDate& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> < '" + <%lName%>.toString() + "'");
+                AppendFilterCondition( "<%name%> < '" + <%lName%>.toString() + "'" );
 	}
 
-	void <%uName%>GreaterThan(const QDate& <%lName%>)
+        void <%uName%>GreaterThan( const QDate& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> > '" + <%lName%>.toString() + "'");
+                AppendFilterCondition( "<%name%> > '" + <%lName%>.toString() + "'" );
 	}
 
-	void <%uName%>LessThanOrEqualTo(const QDate& <%lName%>)
+        void <%uName%>LessThanOrEqualTo( const QDate& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> <= '" + <%lName%>.toString() + "'");
+                AppendFilterCondition( "<%name%> <= '" + <%lName%>.toString() + "'" );
 	}
 
-	void <%uName%>GreaterThanOrEqualTo(const QDate& <%lName%>)
+        void <%uName%>GreaterThanOrEqualTo( const QDate& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> >= '" + <%lName%>.toString() + "'");
+                AppendFilterCondition( "<%name%> >= '" + <%lName%>.toString() + "'" );
 	}
 
-	void <%uName%>OrderBy(bool ascending)
+        void <%uName%>OrderBy( bool ascending )
 	{
-		AppendSortCriteria("<%name%>", ascending);
+                AppendSortCriteria( "<%name%>", ascending );
 	}

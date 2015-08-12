@@ -54,12 +54,12 @@ static char* gConnectionStrings[] =
 
 <%destructors%>
 
-	QSqlDatabase::removeDatabase(_connectionName);
+    QSqlDatabase::removeDatabase( _connectionName );
 }
 
-void <%productName%>Database::SetODBCDriver(ODBCDrivers odbcDriver)
+void <%productName%>Database::SetODBCDriver( ODBCDrivers odbcDriver )
 {
-	switch (odbcDriver)
+    switch ( odbcDriver )
 	{
 	case eSqlServer2000:
 		_driverString = gConnectionStrings[0];
@@ -95,77 +95,59 @@ void <%productName%>Database::SetODBCDriver(ODBCDrivers odbcDriver)
 	_connectionString = "";
 }
 
-void <%productName%>Database::SetHost
-(
-	const QString& host
-)
+void <%productName%>Database::SetHost( const QString& host )
 {
 	_host = host;
 	_connectionString = "";
 }
 
-void <%productName%>Database::SetPort
-(
-	int portNum
-)
+void <%productName%>Database::SetPort( int portNum )
 {
 	_port = QString::number(portNum);
 }
 
-void <%productName%>Database::SetDatabase
-(
-	const QString& database
-)
+void <%productName%>Database::SetDatabase( const QString& database )
 {
 	_databaseName = database;
 }
 
-void <%productName%>Database::SetUserName
-(
-	const QString& userName
-)
+void <%productName%>Database::SetUserName( const QString& userName )
 {
 	_userName = userName;
 }
 
-void <%productName%>Database::SetPassword
-(
-	const QString& password
-)
+void <%productName%>Database::SetPassword( const QString& password )
 {
 	_password = password;
 }
 
-void <%productName%>Database::CreateConnection
-(
-	const QString& connectionName
-)
+void <%productName%>Database::CreateConnection( const QString& connectionName )
 {
-	_connectionName = connectionName + QString::number(gConnectionCount++);
-	_database = QSqlDatabase::addDatabase("QODBC", _connectionName);
+    _connectionName = connectionName + QString::number( gConnectionCount++ );
+    _database = QSqlDatabase::addDatabase( "QODBC", _connectionName );
 
-	if (_connectionString.length() == 0)
+    if ( _connectionString.length() == 0 )
 		BuildConnectionString();
 
-	_database.setDatabaseName(_connectionString);
+    _database.setDatabaseName( _connectionString );
 }
 
 void <%productName%>Database::BuildConnectionString()
 {
-	_driverString.replace("<%server%>", _host.toAscii());
-	_driverString.replace("<%port%>", _port.toAscii());
-	_driverString.replace("<%database%>", _databaseName.toAscii());
-	_driverString.replace("<%user%>", _userName.toAscii());
-	_driverString.replace("<%pass%>", _password.toAscii());
+    _driverString.replace( "<%server%>", _host.toLatin1() );
+    _driverString.replace( "<%port%>", _port.toLatin1() );
+    _driverString.replace( "<%database%>", _databaseName.toLatin1() );
+    _driverString.replace( "<%user%>", _userName.toLatin1() );
+    _driverString.replace( "<%pass%>", _password.toLatin1() );
 
 	_connectionString = _driverString;
 }
 
 bool <%productName%>Database::Open()
 {
-	bool result(false);
+    bool result( false );
 
-	if ((result = _database.isOpen()) == false)
+    if ( ( result = _database.isOpen() ) == false )
 	{
 		result = _database.open();
 		if (result == false)
@@ -179,15 +161,15 @@ bool <%productName%>Database::Open()
 
 void <%productName%>Database::Close()
 {
-	if (IsOpen())
+    if ( IsOpen() )
 		_database.close();
 }
 
 bool <%productName%>Database::IsOpen()
 {
-	bool result(false);
+    bool result( false );
 
-	if (_database.isValid())
+    if ( _database.isValid() )
 		result = _database.isOpen();
 
 	return result;

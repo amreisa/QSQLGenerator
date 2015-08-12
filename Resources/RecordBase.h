@@ -69,7 +69,7 @@ struct ColumnMetaData
 		_changed = false; 
 	}
 
-	ColumnMetaData(const ColumnMetaData& copyMe)
+    ColumnMetaData( const ColumnMetaData& copyMe )
 	{
 		_field = copyMe._field;
 		_value = copyMe._value;
@@ -89,59 +89,59 @@ typedef QVector<ColumnMetaData>::iterator ColumnMetaIterator;
 class <%dllExport%> RecordBase
 {
 public:
-	RecordBase(const QString& table, quint32 fieldCount);
-    RecordBase (const RecordBase& copyMe);
-    RecordBase& operator=(const RecordBase& assignme);
+    RecordBase( const QString& table, quint32 fieldCount );
+    RecordBase( const RecordBase& copyMe );
+    RecordBase& operator=( const RecordBase& assignme );
 
-	void AssignMe(const RecordBase* assignMe);
+    void AssignMe( const RecordBase* assignMe );
 
-	virtual ~RecordBase(void);
+    virtual ~RecordBase( void );
 
-	virtual quint32 Count(void);
-	virtual QString Table(void);
-	virtual QString Field(quint32 index);
+    virtual quint32 Count( void );
+    virtual QString Table( void );
+    virtual QString Field( quint32 index );
 
-	bool Changed(quint32 index);
-	void Changed(quint32 index, bool changed);
-	bool Changed(const QString& name);
-	void Changed(const QString& name, bool changed);
+    bool Changed( quint32 index );
+    void Changed( quint32 index, bool changed );
+    bool Changed( const QString& name );
+    void Changed( const QString& name, bool changed );
 
-	QVariant FieldValue(quint32 index);
-	QVariant FieldValue(const QString& name);
+    QVariant FieldValue( quint32 index );
+    QVariant FieldValue( const QString& name );
 
-	void SetValue(quint32 index, const QVariant& value);
-	void SetValue(const QString& name, const QVariant& val);
+    void SetValue( quint32 index, const QVariant& value );
+    void SetValue( const QString& name, const QVariant& val );
 
-	virtual quint32 Key(void);
-	virtual bool IsEmpty(void);
+    virtual quint32 Key( void );
+    virtual bool IsEmpty( void );
 
-	virtual	QString EntityName(void);
+    virtual	QString EntityName( void );
 
-	virtual	QString ToXml(bool preferAttrib	= false, bool skipEmpty = false, bool upperCase = false);
-	virtual	QDomDocument& GetDom(bool preferAttrib = false, bool skipEmpty = false, bool upperCase = false);
+    virtual	QString ToXml( bool preferAttrib	= false, bool skipEmpty = false, bool upperCase = false );
+    virtual	QDomDocument& GetDom( bool preferAttrib = false, bool skipEmpty = false, bool upperCase = false );
 
 	// encode/decode Datatypes
-	QString EncodeDateTime(const QDateTime& dateTime);
-	QDateTime DecodeDateTime(const QString& isoDateTime);
+    QString EncodeDateTime( const QDateTime& dateTime );
+    QDateTime DecodeDateTime( const QString& isoDateTime );
 
-	QString EncodeDate(const QDate& dateTime);
-	QDate DecodeDate(const QString& isoDate);
+    QString EncodeDate( const QDate& dateTime );
+    QDate DecodeDate( const QString& isoDate );
 
-	QString EncodeTime(const QTime& dateTime);
-	QTime DecodeTime(const QString& isoTime);
+    QString EncodeTime( const QTime& dateTime );
+    QTime DecodeTime( const QString& isoTime );
 
-	QString EncodeGuid(const QUuid& uid);
-	QUuid DecodeGuid(const QString& uuidString);
+    QString EncodeGuid( const QUuid& uid );
+    QUuid DecodeGuid( const QString& uuidString );
 	
-	ColumnType FieldDataType(quint32 index);
-	ColumnType FieldDataType(const QString& fieldName);
-	void SetFieldDataType(quint32 index, const QString& fieldName, ColumnType type);
+    ColumnType FieldDataType( quint32 index );
+    ColumnType FieldDataType( const QString& fieldName );
+    void SetFieldDataType( quint32 index, const QString& fieldName, ColumnType type );
 
-	QDateTime Now(void);
-	void Clear(void);
-	void ClearUpdates(void);
+    QDateTime Now( void );
+    void Clear( void );
+    void ClearUpdates( void );
 
-	UpdateHash GetUpdateHash(void);
+    UpdateHash GetUpdateHash( void );
 
 protected:
 	QString						_entityName;

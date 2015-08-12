@@ -1,45 +1,45 @@
 	// Setters for column <%name%>
-	void <%uName%>EqualsTo(qreal <%lName%>)
+        void <%uName%>EqualsTo( qreal <%lName%> )
 	{
-		AppendFilterCondition("<%name%> = " + QString::number(<%lName%>));
+                AppendFilterCondition( "<%name%> = " + QString::number( <%lName%> ) );
 	}
 
-	void <%uName%>NotEqualsTo(qreal <%lName%>)
+        void <%uName%>NotEqualsTo( qreal <%lName%> )
 	{
-		AppendFilterCondition("<%name%> <> " + QString::number(<%lName%>));
+                AppendFilterCondition( "<%name%> <> " + QString::number( <%lName%> ) );
 	}
 
-	void <%uName%>LessThan(qreal <%lName%>)
+        void <%uName%>LessThan( qreal <%lName%> )
 	{
-		AppendFilterCondition("<%name%> < " + QString::number(<%lName%>));
+                AppendFilterCondition( "<%name%> < " + QString::number( <%lName%> ) );
 	}
 
-	void <%uName%>GreaterThan(qreal <%lName%>)
+        void <%uName%>GreaterThan( qreal <%lName%> )
 	{
-		AppendFilterCondition("<%name%> > " + QString::number(<%lName%>));
+                AppendFilterCondition( "<%name%> > " + QString::number( <%lName%> ) );
 	}
 
-	void <%uName%>LessThanOrEqualTo(qreal <%lName%>)
+        void <%uName%>LessThanOrEqualTo( qreal <%lName%> )
 	{
-		AppendFilterCondition("<%name%> <= " + QString::number(<%lName%>));
+                AppendFilterCondition( "<%name%> <= " + QString::number( <%lName%> ) );
 	}
 
-	void <%uName%>GreaterThanOrEqualTo(qreal <%lName%>)
+        void <%uName%>GreaterThanOrEqualTo( qreal <%lName%> )
 	{
-		AppendFilterCondition("<%name%> >= " + QString::number(<%lName%>));
+                AppendFilterCondition( "<%name%> >= " + QString::number( <%lName%> ) );
 	}
 	
-	void <%uName%>Like(const QString& <%lName%>)
+        void <%uName%>Like( const QString& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> like '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> like '" + <%lName%> + "'" );
 	}
 	
-	void <%uName%>NotLike(const QString& <%lName%>)
+        void <%uName%>NotLike( const QString& <%lName%> )
 	{
-		AppendFilterCondition("<%name%> not like '" + <%lName%> + "'");
+                AppendFilterCondition( "<%name%> not like '" + <%lName%> + "'" );
 	}
 
-	void <%uName%>OrderBy(bool ascending)
+        void <%uName%>OrderBy( bool ascending )
 	{
-		AppendSortCriteria("<%name%>", ascending);
+                AppendSortCriteria( "<%name%>", ascending );
 	}

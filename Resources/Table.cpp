@@ -34,18 +34,15 @@
 QMutex <%table%>Table::_mutex;
 QSqlQuery* <%table%>Table::_insertQuery(NULL);
 
-<%table%>Table::<%table%>Table
-(
-	<%productName%>Database* database
-): 
-	_database(database)
+<%table%>Table::<%table%>Table( <%productName%>Database* database ): 
+    _database( database )
 {
-	if (<%table%>Table::_insertQuery == NULL)
+    if ( <%table%>Table::_insertQuery == NULL )
 	{
-		<%table%>Table::_insertQuery = new QSqlQuery(_database->Database());
+        <%table%>Table::_insertQuery = new QSqlQuery( _database->Database() );
 		QString insertStatement = <%table%>Record::GetInsertStatement();
 
-		<%table%>Table::_insertQuery->prepare(insertStatement);
+        <%table%>Table::_insertQuery->prepare( insertStatement );
 	}
 }
 
@@ -54,15 +51,15 @@ QSqlQuery* <%table%>Table::_insertQuery(NULL);
 	_database = NULL;
 }
 
-QString <%table%>Table::_createStatement("<%createStmt%>");
+QString <%table%>Table::_createStatement( "<%createStmt%>" );
 
-bool <%table%>Table::Create(void)
+bool <%table%>Table::Create( void )
 {
-	if (_database->Database().isValid())
+    if ( _database->Database().isValid() )
 	{
-		QSqlQuery createQuery(_database->Database());
+        QSqlQuery createQuery( _database->Database() );
 
-		return createQuery.exec(<%table%>Table::_createStatement);
+        return createQuery.exec( <%table%>Table::_createStatement );
 	}
 
 	return false;
@@ -75,26 +72,26 @@ bool <%table%>Table::Add
 {
 	bool result(false);	
 
-	Q_ASSERT(<%table%>Table::_insertQuery != NULL);
+    Q_ASSERT( <%table%>Table::_insertQuery != NULL );
 	
-	if (_database->Database().isValid())
+    if ( _database->Database().isValid() )
 	{
-		for (quint32 i = 1; i < record.Count(); i++) // assumes _id is at position zero
+        for ( quint32 i = 1; i < record.Count(); i++ ) // assumes _id is at position zero
 		{
-			QString bindName(":" + record.Field(i));
+            QString bindName( ":" + record.Field( i ) );
 
-			<%table%>Table::_insertQuery->bindValue(bindName, record.FieldValue(i));
+            <%table%>Table::_insertQuery->bindValue( bindName, record.FieldValue( i ) );
 		}
 
-		QMutexLocker lock(&<%table%>Table::_mutex);
+        QMutexLocker lock( &<%table%>Table::_mutex );
 
 		result = <%table%>Table::_insertQuery->exec();
 
-		if (result) 
+        if ( result )
 		{
-			if (<%table%>Table::_insertQuery->numRowsAffected() == 1)
+            if ( <%table%>Table::_insertQuery->numRowsAffected() == 1 )
 			{
-				record.SetValue(0, <%table%>Table::_insertQuery->lastInsertId());
+                record.SetValue( 0, <%table%>Table::_insertQuery->lastInsertId() );
 			} 
 			else 
 			{
@@ -113,55 +110,48 @@ bool <%table%>Table::Add
 	return result;
 }
 
-bool <%table%>Table::AddOrUpdate
-(
-	<%table%>Record& ent
-)
+bool <%table%>Table::AddOrUpdate( <%table%>Record& ent )
 {
-	if (ent.Key() == 0)
-		return Add(ent);
+    if ( ent.Key() == 0 )
+        return Add( ent );
 	
-	return Update(ent);
+    return Update( ent );
 }
 
 bool <%table%>Table::ClearTable()
 {
-	bool result(false);
+    bool result( false );
 
-	QSqlQuery query(_database->Database());
-	QString sql(QString("delete from \"<%table%>\""));
+    QSqlQuery query( _database->Database() );
+    QString sql( QString( "delete from \"<%table%>\"" ) );
 
-	QMutexLocker lock(&<%table%>Table::_mutex);
+    QMutexLocker lock( &<%table%>Table::_mutex );
 
-	if (query.exec(sql)) 	
+    if ( query.exec( sql ) )
 		result = true;
 
 	return result;
 }
 
-bool <%table%>Table::Get
-(
-	quint32 key,
-	<%table%>Record& record
-)
+bool <%table%>Table::Get( quint32 key, <%table%>Record& record )
 {
-	bool result(false);
+    bool result( false );
 
-	QSqlQuery query(_database->Database());
-	QString sql(QString("select * from \"<%table%>\" where %1 = %2").arg(record.Field(0)).arg(key));
+    QSqlQuery query( _database->Database() );
+    QString sql( QString( "select * from \"<%table%>\" where %1 = %2").arg( record.Field( 0 ) ).arg( key ) );
 
-	QMutexLocker lock(&<%table%>Table::_mutex);
+    QMutexLocker lock( &<%table%>Table::_mutex );
 
-	if (query.exec(sql)) 
+    if ( query.exec( sql ) )
 	{	
 		// we assume that order of columns is the same as order of entity fields - guaranteed by Dal code generator
-		if (query.next()) 
+        if ( query.next() )
 		{
 			// copy fields
-			for (quint32 i(0); i < record.Count(); i++) 
+            for ( quint32 i(0); i < record.Count(); i++ )
 			{
-				record.SetValue(i, query.value(i));
-				record.Changed(i, false);
+                record.SetValue( i, query.value( i ) );
+                record.Changed( i, false );
 			}
 			
 			result = true;
@@ -179,42 +169,38 @@ bool <%table%>Table::Get
 	return result;
 }
 
-bool <%table%>Table::Get
-(	
-	QList<<%table%>Record>& list,
-	<%table%>SelectionCriteria& constraints
-)
+bool <%table%>Table::Get( QList<<%table%>Record>& list, <%table%>SelectionCriteria& constraints )
 {
-	bool result(false);
+    bool result( false );
 
 	list.clear();
 
 	QString sql = "select * from \"<%table%>\"";
 
-	if (constraints.GetFilterStatement().length() > 0)
-		sql.append(" where " + constraints.GetFilterStatement());
+    if ( constraints.GetFilterStatement().length() > 0 )
+        sql.append( " where " + constraints.GetFilterStatement() );
 
-	if (constraints.GetOrderStatement().size() > 0)
-		sql.append(" order by " + constraints.GetOrderStatement());
+    if ( constraints.GetOrderStatement().size() > 0 )
+        sql.append( " order by " + constraints.GetOrderStatement() );
 
-	QMutexLocker lock(&<%table%>Table::_mutex);
+    QMutexLocker lock( &<%table%>Table::_mutex );
 
-	QSqlQuery query(_database->Database());
+    QSqlQuery query( _database->Database() );
 
-	if (query.exec(sql)) 
+    if ( query.exec( sql ) )
 	{	
 		// we assume the order of columns is the same as order of entity fields - guaranteed by Dal code generator
-		while (query.next()) 
+        while ( query.next() )
 		{
 			<%table%>Record retrieved;
 			
-			for (quint32 i(0); i < retrieved.Count(); i++) 
+            for ( quint32 i(0); i < retrieved.Count(); i++ )
 			{
-				retrieved.SetValue(i, query.value(i));
-				retrieved.Changed(i, false);
+                retrieved.SetValue( i, query.value( i ) );
+                retrieved.Changed( i, false );
 			}
 			
-			list.push_back(retrieved);
+            list.push_back( retrieved );
 
 			result = true;
 		}
@@ -234,27 +220,27 @@ bool <%table%>Table::Get
 	<%table%>SelectionCriteria& constraints
 )
 {
-	bool result(false);
+    bool result( false );
 
 	columnList.clear();
 
 	QString sql = "select " + columnName + " from \"<%table%>\"";
 
-	if (constraints.GetFilterStatement().length() > 0)
-		sql.append(" where " + constraints.GetFilterStatement());
+    if ( constraints.GetFilterStatement().length() > 0 )
+        sql.append( " where " + constraints.GetFilterStatement() );
 
-	if (constraints.GetOrderStatement().size() > 0)
-		sql.append(" order by " + constraints.GetOrderStatement());
+    if ( constraints.GetOrderStatement().size() > 0 )
+        sql.append( " order by " + constraints.GetOrderStatement() );
 
-	QMutexLocker lock(&<%table%>Table::_mutex);
+    QMutexLocker lock( &<%table%>Table::_mutex );
 
-	QSqlQuery query(_database->Database());
+    QSqlQuery query( _database->Database() );
 
-	if (query.exec(sql)) 
+    if ( query.exec( sql ) )
 	{
-		while (query.next()) 
+        while ( query.next() )
 		{
-			columnList.push_back(query.value(0));
+            columnList.push_back( query.value( 0 ) );
 			result = true;
 		}
 	}
@@ -262,24 +248,19 @@ bool <%table%>Table::Get
 	return result;
 }
 
-quint32	<%table%>Table::GetKey
-(
-	<%table%>Record& ent, 
-	const QString& colName, 
-	const QString& colValue
-) 
+quint32	<%table%>Table::GetKey( <%table%>Record& ent, const QString& colName, const QString& colValue )
 {
 	quint32 id = -1;
 	QString sql;
 
-	sql = QString("select \"%1\" from \"<%table%>\" where %2 = '%3'").arg(ent.Field(0)).arg(colName)
-		.arg(QString(colValue).replace('\'', "''"));
+    sql = QString( "select \"%1\" from \"<%table%>\" where %2 = '%3'" ).arg( ent.Field( 0 ) ).arg( colName )
+        .arg( QString( colValue ).replace( '\'', "''" ) );
 
-	QSqlQuery query(_database->Database());
-	QMutexLocker lock(&<%table%>Table::_mutex);
+    QSqlQuery query( _database->Database() );
+    QMutexLocker lock( &<%table%>Table::_mutex );
 
-	if (query.exec(sql) && query.next()) 
-		id = query.value(0).toInt();
+    if ( query.exec( sql ) && query.next() )
+        id = query.value( 0 ).toInt();
 
 	return id;
 }
@@ -290,27 +271,23 @@ bool <%table%>Table::Delete
 )
 {
 	<%table%>Record ent;
-	bool result(false);
+    bool result( false );
 
-	QString sql(QString("delete from \"<%table%>\" where %1 = %2").arg(ent.Field(0)).arg(key));
+    QString sql( QString( "delete from \"<%table%>\" where %1 = %2").arg( ent.Field( 0 ) ).arg( key ) );
 
-	QSqlQuery deleteQuery(_database->Database());
-	QMutexLocker lock(&<%table%>Table::_mutex);
+    QSqlQuery deleteQuery( _database->Database() );
+    QMutexLocker lock( &<%table%>Table::_mutex );
 
-	result = deleteQuery.exec(sql);
+    result = deleteQuery.exec( sql );
 
-	if (result)
+    if ( result )
 		result = deleteQuery.numRowsAffected() == 1;
 
 	return result;
 
 }
 
-bool <%table%>Table::Update
-(
-	quint32 key, 
-	const QHash<QString, QVariant>& updates
-) 
+bool <%table%>Table::Update( quint32 key, const QHash<QString, QVariant>& updates )
 {
 	<%table%>Record ent;
 
@@ -319,46 +296,43 @@ bool <%table%>Table::Update
 	QString upd;
 
 	// build update part
-    UpdateHashIter hashItem(updates);
+    UpdateHashIter hashItem( updates );
 
-    while (hashItem.hasNext()) 
+    while ( hashItem.hasNext() )
 	{
         hashItem.next();
-		if (upd.length() > 0) 
-			upd.append(", ");
+        if ( upd.length() > 0 )
+            upd.append( ", " );
 
-		upd.append(hashItem.key());
-		upd.append("=");
+        upd.append( hashItem.key() );
+        upd.append( "=" );
 
 		QVariant val = hashItem.value();
 		QString v = val.toString();
 
-		if (val.type() == QVariant::String)
+        if ( val.type() == QVariant::String )
 				v = "'" + v.replace("'", "''") + "'";
 
-		upd.append(v);
+        upd.append( v );
     }
 
-	sql = QString("update \"<%table%>\" set \"%1\" where \"%2\" = %3").arg(upd).arg(ent.Field(0)).arg(key);
+    sql = QString( "update \"<%table%>\" set \"%1\" where \"%2\" = %3" ).arg( upd ).arg( ent.Field( 0 ) ).arg( key );
 
-	QSqlQuery updateQuery(_database->Database());
+    QSqlQuery updateQuery( _database->Database() );
 
-	QMutexLocker lock(&<%table%>Table::_mutex);
+    QMutexLocker lock( &<%table%>Table::_mutex );
 
-	result = updateQuery.exec(sql);
-	if (result) 
+    result = updateQuery.exec( sql );
+    if ( result )
 		result = updateQuery.numRowsAffected() == 1;
 	
 	return result;
 }
 
 
-bool <%table%>Table::Update
-(
-	<%table%>Record& ent
-)
+bool <%table%>Table::Update( <%table%>Record& ent )
 {
-	return Update(ent.Key(), ent.GetUpdateHash());
+    return Update( ent.Key(), ent.GetUpdateHash() );
 }
 
 
@@ -370,37 +344,29 @@ bool <%table%>Table::Update
 	\return dom document object reference (use toString() to get xml string)
 
 
-QDomDocument& <%table%>Table::GetDom
-(
-	<%table%>Record& ent,
-	QString docName,
-	QString	sort,
-	bool preferAttrib,
-	bool skipEmpty,
-	bool upperCase
-)
+QDomDocument& <%table%>Table::GetDom( <%table%>Record& ent, QString docName, QString	sort, bool preferAttrib, bool skipEmpty, bool upperCase )
 {
-	if (_dom)
+    if ( _dom )
 		delete _dom;
 
 	_dom = new QDomDocument;
-	if (_dom)
+    if ( _dom )
 	{
 		<%table%>RecordList list;
 		<%table%>RecordListIter iter;
 
-		QDomElement root = _dom->createElement(docName);
-		_dom->appendChild(root);
+        QDomElement root = _dom->createElement( docName );
+        _dom->appendChild( root );
 
 
-		Get(list, ent, sort);
+        Get( list, ent, sort );
 
 		iter = list.begin();
-		while (iter != list.end()) 
+        while ( iter != list.end() )
 		{
-			<%table%>Record ent = (*iter);
-			QDomDocument xent = ent.GetDom(preferAttrib, skipEmpty, upperCase);
-			root.appendChild(xent.firstChild());
+            <%table%>Record ent = ( *iter );
+            QDomDocument xent = ent.GetDom( preferAttrib, skipEmpty, upperCase );
+            root.appendChild( xent.firstChild() );
 			++iter;
 		}
 	}

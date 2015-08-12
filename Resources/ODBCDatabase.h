@@ -41,41 +41,41 @@ public:
 	<%productName%>Database();
 	virtual ~<%productName%>Database();
 
-	void CreateConnection(const QString& connectionName);
+    void CreateConnection( const QString& connectionName );
 
 	// Use this to pass a connection string to QT
-	void SetConnectionString(const QString& connectionString)
+    void SetConnectionString( const QString& connectionString )
 		{ _connectionString = connectionString; }
-	QString ConnectionString(void)
+    QString ConnectionString( void )
 		{ return _connectionString; }
 
 	// Or...use these and a connection string will be created for you
-	void SetODBCDriver(ODBCDrivers odbcDriver);
-	void SetHost(const QString& host);
-	void SetPort(int portNum);
-	void SetDatabase(const QString& database);
-	void SetUserName(const QString& userName);
-	void SetPassword(const QString& password);
+    void SetODBCDriver( ODBCDrivers odbcDriver );
+    void SetHost( const QString& host );
+    void SetPort( int portNum );
+    void SetDatabase( const QString& database );
+    void SetUserName( const QString& userName );
+    void SetPassword( const QString& password );
 
-	QSqlDatabase Database(void)
+    QSqlDatabase Database( void )
 		{ return _database; }
 
-	bool Open(void);
-	void Close(void);
+    bool Open( void );
+    void Close( void );
 
-	bool IsOpen(void);
+    bool IsOpen( void );
 
-	bool BeginTransaction(void)
+    bool BeginTransaction( void )
 	{
 		return _database.transaction();
 	}
 
-	bool CommitTransaction(void)
+    bool CommitTransaction( void )
 	{
 		return _database.commit();
 	}
 
-	bool RollbackTransaction(void)
+    bool RollbackTransaction( void )
 	{
 		return _database.rollback();
 	}
@@ -100,7 +100,7 @@ private:
 	QString						_userName;
 	QString						_password;
 
-	void BuildConnectionString(void);
+    void BuildConnectionString( void );
 };
 <%namespaceEnd%>
 #endif
